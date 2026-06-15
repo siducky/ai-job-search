@@ -1,0 +1,27 @@
+{
+  "query": "data engineer",
+  "location": "Oslo",
+  "scraped_at": "2026-06-15",
+  "total": 2,
+  "seen": {},
+  "jobs_list": [
+    {
+      "title": "Data Engineer",
+      "company": "Test Company A",
+      "location": "Oslo",
+      "date": "2026-06-15",
+      "url": "https://finn.no/job/123",
+      "source": "finn.no",
+      "description_snippet": "Test job 1"
+    },
+    {
+      "title": "ML Engineer",
+      "company": "Test Company B",
+      "location": "Bergen",
+      "date": "2026-06-14",
+      "url": "https://nav.no/stilling/456",
+      "source": "arbeidsplassen.no",
+      "description_snippet": "Test job 2"
+    }
+  ]
+}

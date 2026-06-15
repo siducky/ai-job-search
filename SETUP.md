@@ -1,33 +1,33 @@
 # Setup Guide
 
-Step-by-step instructions for getting the AI Job Search framework running.
+Step-by-step instructions for getting the AI Job Search framework running with Google Gemini.
 
 ## 1. Prerequisites
 
-### Claude Code
-
-Install Claude Code (Anthropic's CLI for Claude):
-
-```bash
-npm install -g @anthropic-ai/claude-code
-```
-
-You'll need an Anthropic API key or a Claude Pro/Team subscription. See the [Claude Code docs](https://docs.anthropic.com/en/docs/claude-code) for details.
-
 ### Python
 
-Python 3.10+ is required for the salary lookup tool. Check with:
+Python 3.10+ is required. Check with:
 
 ```bash
 python --version
 ```
 
-### Bun (for job search tools)
+### Google Gemini API key
 
-The Danish job portal CLIs are written in TypeScript and run with Bun:
+You'll need a Google Gemini API key. Get one from [Google AI Studio](https://aistudio.google.com/). Then set it as an environment variable:
 
 ```bash
-curl -fsSL https://bun.sh/install | bash
+export GEMINI_API_KEY='your_api_key_here'
+```
+
+Add this to your `~/.bashrc` or `~/.zshrc` to make it permanent.
+
+### pip dependencies
+
+Install the required Python packages:
+
+```bash
+pip install google-genai pypdf
 ```
 
 ### LaTeX (for compiling CVs and cover letters)
@@ -49,47 +49,42 @@ cd ai-job-search
 
 Or manually: fork on GitHub, then clone your fork.
 
-## 3. Install job search CLI dependencies
+## 3. Run the Gemini agent
+
+Start the agent:
 
 ```bash
-for tool in jobbank-search jobdanmark-search jobindex-search jobnet-search; do
-  cd .agents/skills/$tool/cli && bun install && cd ../../../..
-done
+python gemini_orchestrator.py
 ```
 
-## 4. Run the setup interview
-
-Start Claude Code in the repository:
-
-```bash
-claude
-```
-
-Then run the onboarding:
+You'll see a prompt where you can type slash commands. Start with the setup command:
 
 ```
 /setup
 ```
 
-Claude will offer two paths:
+The agent will offer three paths, auto-detecting which materials you have:
 
-- **Path A (recommended):** Share your existing CV (mention the file with `@` or paste the text). Claude extracts your information and asks follow-up questions for anything missing.
-- **Path B:** Answer structured interview questions section by section.
+- **Path A (documents folder — recommended):** Point `/setup` at your `documents/` folder (CV PDF, LinkedIn export, diplomas, reference letters, past applications). The agent reads everything and populates your profile. Idempotent and safe to re-run as you add more material; see `documents/README.md` for the folder layout.
+- **Path B (CV import):** Share your existing CV (paste the text or provide a file path). The agent extracts your information and asks follow-up questions for anything missing.
+- **Path C (interview):** Answer structured interview questions section by section.
 
-Both paths produce the same result: fully populated profile files.
+All paths produce the same result: fully populated profile files.
 
 ### What gets populated
 
 | File | Content |
 |------|---------|
-| `CLAUDE.md` | Your full candidate profile |
-| `01-candidate-profile.md` | Structured education, experience, skills |
-| `02-behavioral-profile.md` | Behavioral assessment |
-| `04-job-evaluation.md` | Personalized skill match areas and career goals |
-| `05-cv-templates.md` | Profile statement templates for your background |
-| `07-interview-prep.md` | STAR examples from your experience |
+| `CANDIDATE.md` | Your full candidate profile |
+| `.gemini/skills/job-application-assistant/01-candidate-profile.md` | Structured education, experience, skills |
+| `.gemini/skills/job-application-assistant/02-behavioral-profile.md` | Behavioral assessment |
+| `.gemini/skills/job-application-assistant/03-writing-style.md` | Writing style guide |
+| `.gemini/skills/job-application-assistant/04-job-evaluation.md` | Personalized skill match areas and career goals |
+| `.gemini/skills/job-application-assistant/05-cv-templates.md` | Profile statement templates for your background |
+| `.gemini/skills/job-application-assistant/06-cover-letter-templates.md` | Cover letter templates |
+| `.gemini/skills/job-application-assistant/07-interview-prep.md` | STAR examples from your experience |
+| `.gemini/skills/job-scraper/search-queries.md` | Job search queries for `/scrape` |
 | `cv/main_example.tex` | Your LaTeX CV with actual details |
-| `search-queries.md` | Job search queries for `/scrape` |
 
 ### Re-running setup
 
@@ -103,7 +98,7 @@ You can update specific sections later:
 
 The `--section search` option is especially useful as your priorities evolve. It re-runs the search configuration interview and suggests role types you may not have considered based on your full profile.
 
-## 5. Optional: Set up salary benchmarking
+## 4. Optional: Set up salary benchmarking
 
 If you have salary data (from a union, salary survey, Glassdoor, or personal research):
 
@@ -116,12 +111,12 @@ If you have salary data (from a union, salary survey, Glassdoor, or personal res
 
 This creates `salary_data.json` which the `/apply` workflow uses for salary benchmarking. If you skip this step, salary lookup is simply omitted.
 
-## 6. Test the workflow
+## 5. Test the workflow
 
 Find a job posting you're interested in, then:
 
 ```
-/apply https://jobindex.dk/job/1234567
+/apply https://www.finn.no/job/fulltime/1234567
 ```
 
 Or paste the job description directly:
@@ -130,14 +125,16 @@ Or paste the job description directly:
 /apply [paste job posting text here]
 ```
 
-Claude will:
-1. Evaluate the fit against your profile
-2. Ask if you want to proceed
-3. Draft a tailored CV and cover letter
-4. Have a reviewer agent critique the drafts
-5. Revise and present the final output
+The agent will:
+1. **Parse** the job posting (URL or text)
+2. **Evaluate fit** against your profile (skills, experience, culture, location, career alignment)
+3. **Draft** a tailored CV and cover letter in LaTeX
+4. **Spawn a reviewer agent** that researches the company and critiques the drafts
+5. **Revise** based on the reviewer's feedback
+6. **Compile and inspect** both PDFs: lualatex for the CV, xelatex for the cover letter. The agent reads the rendered pages and iterates on the LaTeX until the CV is exactly 2 pages with no orphaned entry titles, and the cover letter is exactly 1 page with the signature visible and fonts consistent.
+7. **Present** the final output with a verification checklist
 
-## 7. Compile your documents
+## 6. Compile your documents
 
 After `/apply` creates the LaTeX files:
 
@@ -149,13 +146,29 @@ cd cv && lualatex main_<company>.tex && cd ..
 cd cover_letters && xelatex cover_<company>_<role>.tex && cd ..
 ```
 
+## Other commands
+
+- **`/scrape`** — Search job portals for positions matching your profile
+- **`/expand`** — Enrich your profile by scanning documents and linked online presence (GitHub, portfolio)
+- **`/upskill [url]`** — Analyze skill gaps and generate a prioritized learning plan
+- **`/reset [scope]`** — Wipe profile data or documents folder
+- **`/help`** — Show available commands
+- **`/exit`** — Exit the agent
+
 ## Troubleshooting
+
+### "GEMINI_API_KEY not set"
+Make sure the environment variable is set:
+
+```bash
+export GEMINI_API_KEY='your_api_key_here'
+```
 
 ### "salary_data.json not found"
 This is expected if you haven't set up salary benchmarking. The `/apply` workflow skips this step automatically.
 
-### Job search CLI tools not working
-Make sure Bun is installed and you ran `bun install` in each CLI directory. The tools require network access to fetch job listings.
+### Job search not working
+Make sure `curl` is installed and you have network access. The scraper fetches Norwegian job portals (finn.no, jobbnorge.no, nav.arbeidplassen.no) directly via HTTP.
 
 ### LaTeX compilation errors
 - CV: uses `lualatex` (pdflatex often fails on modern MiKTeX with `fontawesome5` font-expansion errors; lualatex handles the same sources cleanly)
