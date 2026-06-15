@@ -68,3 +68,4 @@ upskill/*.md
 
 # Agent usage logs
 .agents/
+service-account.json
