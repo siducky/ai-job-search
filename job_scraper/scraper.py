@@ -37,10 +37,11 @@ import json
 import os
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 
 from playwright.async_api import async_playwright
+import random
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -51,10 +52,7 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Finn.no location codes (numeric IDs)
 FINN_LOCATION_CODES = {
     "norge": "0.20001",
-    "oslo": "0.20061",
-    "bergen": "1.20001.20046",
-    "trondheim": "1.20001.20016",
-    "stavanger": "1.20001.20012",
+    "oslo": "1.20001.20061",
     "tromsø": "1.20001.20019",
     "kristiansand": "1.20001.22042",
     "akershus": "1.20001.20003",
@@ -130,16 +128,19 @@ def parse_relative_date(text: str) -> str:
     if text == "ny i dag":
         return today.strftime("%Y-%m-%d")
     if text == "i går":
-        return today.replace(day=today.day - 1).strftime("%Y-%m-%d")
+        # Use timedelta to safely subtract one day
+        return (today - timedelta(days=1)).strftime("%Y-%m-%d")
 
     match = re.match(r"(\d+)\s*(dag|uke|måned|år)", text)
     if match:
         amount = int(match.group(1))
         unit = match.group(2)
         if unit == "dag":
-            return today.replace(day=today.day - amount).strftime("%Y-%m-%d")
+            # Subtract days using timedelta to avoid invalid day values
+            return (today - timedelta(days=amount)).strftime("%Y-%m-%d")
         elif unit == "uke":
-            return today.replace(day=today.day - amount * 7).strftime("%Y-%m-%d")
+            # Subtract weeks using timedelta
+            return (today - timedelta(weeks=amount)).strftime("%Y-%m-%d")
         elif unit == "måned":
             new_month = today.month - amount
             year = today.year
@@ -239,11 +240,8 @@ async def scrape_finn(
     jobs: list[dict] = []
     seen_urls: set[str] = set()
 
-    base_url = "https://www.finn.no/job/fulltime/search.html"
-    params = [
-        f"location={location}",
-        "sort=PUBLISHED_DESC",
-    ]
+    base_url = "https://www.finn.no/job/search"
+    params = [f"location={location}", "sort=RELEVANCE", "working_language=2"]
     if query:
         params.append(f"q={query.replace(' ', '+')}")
 
@@ -368,22 +366,22 @@ async def scrape_arbeidsplassen(
     jobs: list[dict] = []
     seen_urls: set[str] = set()
 
-    base_url = "https://arbeidsplassen.nav.no/sok"
+    base_url = "https://arbeidsplassen.nav.no/stillinger"
     params = []
     if query:
-        params.append(f"searchstring={query.replace(' ', '+')}")
+        params.append(f"q={query.replace(' ', '+')}")
     if location:
-        params.append(f"location={location}")
-    params.append("page=1")  # We'll override this per-page
+        params.append(
+            f"county={location.upper()}"
+        )  # NAV expects uppercase county names
 
     async with async_playwright() as p:
         browser, context = await make_browser_context(p, headless)
         page = await context.new_page()
 
         for page_num in range(1, max_pages + 1):
-            param_list = [pp for pp in params if not pp.startswith("page=")]
-            param_list.append(f"page={page_num}")
-            url = f"{base_url}?{'&'.join(param_list)}"
+            # NAV does not require a page parameter; we simply use the base params
+            url = f"{base_url}?{'&'.join(params)}"
             print(
                 f"[arbeidsplassen.no] Fetching page {page_num}: {url}",
                 file=sys.stderr,
@@ -465,7 +463,7 @@ async def extract_arbeidsplassen_job(page, link_element) -> Optional[dict]:
 
         # Try to find the parent card container for additional metadata
         # Navigate up to find the card container
-        parent = await link_element.evaluate(
+        parent = await link_element.evaluate_handle(
             "el => el.closest('li, div, article, section')"
         )
 
@@ -540,6 +538,124 @@ async def extract_arbeidsplassen_job(page, link_element) -> Optional[dict]:
 # 3. JOBNORGE.NO Scraper
 # ===================================================================
 
+# ===================================================================
+# 4. LINKEDIN.COM Scraper
+# ===================================================================
+
+LINKEDIN_BASE_URL = "https://www.linkedin.com/jobs/search"
+
+
+async def scrape_linkedin(
+    query: Optional[str] = None,
+    location: str = "Oslo",
+    max_pages: int = 2,
+    headless: bool = True,
+    timeout_ms: int = 30000,
+) -> list[dict]:
+    """
+    Scrape job listings from LinkedIn using Playwright.
+
+    Args:
+        query: Search query (e.g. "data engineer").
+        location: Location string (city name).
+        max_pages: Number of result pages to scrape (25 results per page).
+        headless: Run browser in headless mode.
+        timeout_ms: Navigation timeout in milliseconds.
+
+    Returns:
+        List of job dicts with keys: title, company, location, date, url, description_snippet, source
+    """
+    jobs: list[dict] = []
+    seen_urls: set[str] = set()
+
+    async with async_playwright() as p:
+        browser, context = await make_browser_context(p, headless)
+        page = await context.new_page()
+
+        for page_num in range(1, max_pages + 1):
+            start = (page_num - 1) * 25
+            params = [
+                f"keywords={query.replace(' ', '+')}" if query else "",
+                f"location={location.replace(' ', '+')}",
+                f"start={start}",
+            ]
+            url = f"{LINKEDIN_BASE_URL}?{'&'.join([p for p in params if p])}"
+            print(f"[linkedin.com] Fetching page {page_num}: {url}", file=sys.stderr)
+
+            try:
+                await page.goto(url, timeout=timeout_ms, wait_until="networkidle")
+                await page.wait_for_timeout(3000)
+                await page.wait_for_selector(
+                    "ul.jobs-search__results-list li", timeout=10000
+                )
+            except Exception as e:
+                print(
+                    f"[linkedin.com] Warning: Failed to load page {page_num}: {e}",
+                    file=sys.stderr,
+                )
+                break
+
+            job_elements = await page.query_selector_all(
+                "ul.jobs-search__results-list li"
+            )
+            print(
+                f"[linkedin.com] Found {len(job_elements)} job cards on page {page_num}",
+                file=sys.stderr,
+            )
+
+            for el in job_elements:
+                job = await extract_linkedin_job(page, el)
+                if job and job["url"] not in seen_urls:
+                    seen_urls.add(job["url"])
+                    job["source"] = "linkedin.com"
+                    jobs.append(job)
+
+            # Polite delay
+            await asyncio.sleep(random.uniform(2, 5))
+
+        await browser.close()
+
+    return jobs
+
+
+async def extract_linkedin_job(page, element) -> dict:
+    """Extract job data from a LinkedIn job card element."""
+    try:
+        title_el = await element.query_selector("h3.base-search-card__title")
+        company_el = await element.query_selector("h4.base-search-card__subtitle")
+        location_el = await element.query_selector("span.job-search-card__location")
+        date_el = await element.query_selector("time")
+        link_el = await element.query_selector("a.base-card__full-link")
+
+        title = (await title_el.inner_text()).strip() if title_el else "Unknown"
+        company = (await company_el.inner_text()).strip() if company_el else "Unknown"
+        location = (await location_el.inner_text()).strip() if location_el else ""
+        date_text = (await date_el.get_attribute("datetime")).strip() if date_el else ""
+        url = await link_el.get_attribute("href") if link_el else ""
+
+        # Convert LinkedIn relative dates to ISO if possible
+        date = date_text if date_text else "unknown"
+
+        # Description snippet is not directly available; leave empty
+        return {
+            "title": title,
+            "company": company,
+            "location": location,
+            "date": date,
+            "url": url,
+            "description_snippet": "",
+        }
+    except Exception as e:
+        print(f"[linkedin.com] Warning: Failed to extract job: {e}", file=sys.stderr)
+        return {
+            "title": "unknown",
+            "company": "unknown",
+            "location": "",
+            "date": "unknown",
+            "url": "",
+            "description_snippet": "",
+        }
+
 
 async def scrape_jobbnorge(
     query: Optional[str] = None,
@@ -548,6 +664,25 @@ async def scrape_jobbnorge(
     headless: bool = True,
     timeout_ms: int = 30000,
 ) -> list[dict]:
+    # Mapping of city names to Jobbnorge county codes
+    JOBBNORGE_COUNTY_CODES = {
+        "trøndelag": "50",
+        "oslo": "3",
+        "troms": "55",
+        "telemark": "40",
+        "adger": "42",
+        "akershus": "32",
+        "buskerud": "33",
+        "finnmark": "56",
+        "innlandet": "34",
+        "østfold": "31",
+        "vestland": "46",
+        "vestfold": "39",
+        "rogaland": "11",
+        "nordland": "18",
+        "møre og romsdal": "15",
+        # Add more mappings as needed
+    }
     """
     Scrape job listings from jobbnorge.no using Playwright.
 
@@ -569,9 +704,20 @@ async def scrape_jobbnorge(
     base_url = "https://www.jobbnorge.no/search"
     params = []
     if query:
-        params.append(f"q={query.replace(' ', '+')}")
+        # Jobbnorge expects the search term in the 'term' parameter
+        params.append(f"term={query.replace(' ', '+')}")
     if location:
-        params.append(f"location={location}")
+        # Resolve location to county code if possible
+        loc_key = location.strip().lower()
+        county_code = JOBBNORGE_COUNTY_CODES.get(loc_key)
+        if county_code:
+            params.append(f"county={county_code}")
+        else:
+            # Fallback to original location parameter for backward compatibility
+            params.append(f"location={location}")
+    # Ensure results are ordered by publication date and include all periods
+    params.append("OrderBy=Published")
+    params.append("Period=All")
 
     async with async_playwright() as p:
         browser, context = await make_browser_context(p, headless)
@@ -742,6 +888,7 @@ SITE_SCRAPERS = {
     "nav": scrape_arbeidsplassen,
     "arbeidsplassen": scrape_arbeidsplassen,
     "jobbnorge": scrape_jobbnorge,
+    "linkedin": scrape_linkedin,
 }
 
 
@@ -771,7 +918,7 @@ async def scrape_all(
     seen_urls: set[str] = set()
 
     if sites is None:
-        sites = ["finn", "nav", "jobbnorge"]
+        sites = ["finn", "nav", "jobbnorge", "linkedin"]
 
     for site in sites:
         site = site.lower().strip()
@@ -891,8 +1038,8 @@ def main():
         "-s",
         type=str,
         default="all",
-        choices=["finn", "nav", "arbeidsplassen", "jobbnorge", "all"],
-        help="Job site to scrape. 'all' scrapes finn.no, arbeidsplassen.no, and jobbnorge.no. Default: all",
+        choices=["finn", "nav", "arbeidsplassen", "jobbnorge", "linkedin", "all"],
+        help="Job site to scrape. 'all' scrapes finn.no, arbeidsplassen.no, jobbnorge.no, and linkedin.com. Default: all",
     )
     parser.add_argument(
         "--pages",
@@ -927,7 +1074,7 @@ def main():
 
     # Resolve sites to scrape
     if args.site == "all":
-        sites = ["finn", "nav", "jobbnorge"]
+        sites = ["finn", "nav", "jobbnorge", "linkedin"]
     else:
         sites = [args.site]
 
