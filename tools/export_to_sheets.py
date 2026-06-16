@@ -5,9 +5,14 @@ Export Job Scraper Results to Google Sheets
 Takes JSON output from job_scraper/scraper.py and exports to a Google Sheet.
 
 Prerequisites (one-time):
-  1. gcloud auth application-default login
-  2. Enable the Google Sheets API:
+  1. Enable the Google Sheets API:
        gcloud services enable sheets.googleapis.com
+  2. Create an OAuth 2.0 Client ID in Google Cloud Console
+     (Desktop app type), download the JSON, and save it as
+     gcloud_client_secret.json in the repo root.
+
+The script will auto-detect gcloud_client_secret.json and open a
+browser to authenticate with the correct scopes on first run.
 
 Usage:
     # Pipe scraper output directly:
@@ -16,14 +21,18 @@ Usage:
     # Or from a JSON file:
     python3 tools/export_to_sheets.py --input results.json
 
-    # Specify a custom sheet name:
-    python3 tools/export_to_sheets.py --input results.json --title "AI Jobs June 2026"
+    # Overwrite (clear + rewrite) instead of merging:
+    python3 tools/export_to_sheets.py --input results.json --overwrite
 
-    # Overwrite the existing sheet (instead of creating a new one each time):
+    # Use a specific sheet ID (overrides auto-detection):
     python3 tools/export_to_sheets.py --input results.json --sheet-id <sheet_id>
 
-    # Use a service account key file instead of ADC:
+    # Use a service account key file instead of OAuth/ADC:
     python3 tools/export_to_sheets.py --input results.json --key service_account.json
+
+The script remembers which sheet it last used (in .last_sheet_id) and will
+merge new listings into it on subsequent runs, preserving manual edits to
+the Fit, Status, First Seen, and Notes columns.
 """
 
 import argparse
@@ -54,6 +63,8 @@ except ImportError:
 
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+LAST_SHEET_ID_FILE = os.path.join(TOOLS_DIR, ".last_sheet_id")
 
 
 # ---------------------------------------------------------------------------
@@ -88,16 +99,76 @@ COLUMN_WIDTH_HINTS = {
 }
 
 
+def _find_client_secret() -> str | None:
+    """Look for a gcloud OAuth client secret in common locations."""
+    candidates = [os.path.join(REPO_ROOT, "gcloud_client_secret.json")]
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+    return None
+
+
+def _load_last_sheet_id() -> str | None:
+    """Read the last-used sheet ID from the dotfile."""
+    try:
+        with open(LAST_SHEET_ID_FILE) as f:
+            sid = f.read().strip()
+            return sid if sid else None
+    except (FileNotFoundError, PermissionError):
+        return None
+
+
+def _save_last_sheet_id(sheet_id: str):
+    """Write the sheet ID to the dotfile so next run remembers it."""
+    try:
+        with open(LAST_SHEET_ID_FILE, "w") as f:
+            f.write(sheet_id)
+    except (PermissionError, OSError) as e:
+        print(
+            f"Warning: Could not save sheet ID to {LAST_SHEET_ID_FILE}: {e}",
+            file=sys.stderr,
+        )
+
+
 def authorize_gspread(key_path: str = None):
-    """Authorize gspread using ADC or a service account key file."""
+    """Authorize gspread using a service account key, or OAuth client secret."""
     if key_path:
         creds = service_account.Credentials.from_service_account_file(
             key_path, scopes=["https://www.googleapis.com/auth/spreadsheets"]
         )
         return gspread.authorize(creds)
-    else:
-        # Use Application Default Credentials
-        return gspread.service_account()  # Falls back to ADC
+
+    secret = _find_client_secret()
+    if secret:
+        try:
+            gc = gspread.oauth(
+                credentials_filename=secret,
+                authorized_user_filename=os.path.join(
+                    os.path.dirname(secret), "authorized_user.json"
+                ),
+            )
+            return gc
+        except Exception as e:
+            print(f"OAuth flow failed: {e}", file=sys.stderr)
+            print(
+                "Try deleting authorized_user.json and re-running,"
+                " or use --key with a service account.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+    try:
+        creds, _ = google.auth.default(
+            scopes=["https://www.googleapis.com/auth/spreadsheets"]
+        )
+    except Exception as e:
+        print(
+            f"Error: Unable to obtain Application Default Credentials: {e}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    return gspread.authorize(creds)
 
 
 def load_jobs_from_stdin():
@@ -135,11 +206,9 @@ def flatten_jobs(data: dict) -> list[list]:
     """Convert the scraper JSON into a flat list of rows (header + data)."""
     rows = [SHEET_COLUMNS]
 
-    # Get jobs from either jobs_list or the seen dict
     jobs_list = data.get("jobs_list", [])
     seen = data.get("seen", {})
 
-    # Merge both sources, preferring jobs_list order
     processed_urls = set()
 
     for job in jobs_list:
@@ -157,11 +226,10 @@ def flatten_jobs(data: dict) -> list[list]:
             seen_entry.get("fit", "unknown"),
             seen_entry.get("status", "new"),
             seen_entry.get("first_seen", job.get("date", "")),
-            "",  # Notes (always empty for new exports)
+            "",
         ]
         rows.append(row)
 
-    # Add any jobs from 'seen' that weren't in jobs_list
     for url, entry in seen.items():
         if url not in processed_urls:
             row = [
@@ -174,11 +242,113 @@ def flatten_jobs(data: dict) -> list[list]:
                 entry.get("fit", "unknown"),
                 entry.get("status", "new"),
                 entry.get("first_seen", ""),
-                "",  # Notes
+                "",
             ]
             rows.append(row)
 
     return rows
+
+
+def _check_auth_scope_error(e: Exception):
+    """Check if the error is a 403 scope error and print actionable guidance."""
+    msg = str(e)
+    if "403" in msg and "insufficient authentication scopes" in msg.lower():
+        print(
+            "The authenticated credentials don't have the Google Sheets API scope.",
+            file=sys.stderr,
+        )
+        print(file=sys.stderr)
+        print("Fix options:", file=sys.stderr)
+        print(
+            "  1. Re-authenticate with the correct scope:",
+            file=sys.stderr,
+        )
+        print(
+            "       gcloud auth application-default login"
+            " --scopes=https://www.googleapis.com/auth/spreadsheets",
+            file=sys.stderr,
+        )
+        print(
+            "  2. Or use a service account key file:",
+            file=sys.stderr,
+        )
+        print(
+            "       python3 tools/export_to_sheets.py --input results.json --key service_account.json",
+            file=sys.stderr,
+        )
+        print(
+            "  3. Or if using ADC with a service account, ensure it has"
+            " the https://www.googleapis.com/auth/spreadsheets scope enabled.",
+            file=sys.stderr,
+        )
+        return True
+    return False
+
+
+def read_existing_rows(worksheet) -> dict[str, list[str]]:
+    """Read existing sheet rows keyed by URL (column E, index 4).
+
+    Returns a dict: URL -> row list (excluding header). Returns empty dict
+    if the sheet is empty or has only a header.
+    """
+    try:
+        all_rows = worksheet.get_all_values()
+    except Exception:
+        return {}
+
+    if len(all_rows) <= 1:
+        return {}
+
+    header = all_rows[0]
+    if header != SHEET_COLUMNS:
+        print(
+            "Existing sheet has a different header — treating as empty for merge.",
+            file=sys.stderr,
+        )
+        return {}
+
+    existing: dict[str, list[str]] = {}
+    for row in all_rows[1:]:
+        if len(row) < len(SHEET_COLUMNS):
+            row = row + [""] * (len(SHEET_COLUMNS) - len(row))
+        url = row[4].strip()
+        if url:
+            existing[url] = row
+    return existing
+
+
+def merge_rows(new_rows: list[list], existing_rows: dict[str, list[str]]) -> list[list]:
+    """Merge new scraper rows into existing sheet rows.
+
+    For URLs already in the sheet: keep user-edited columns (Fit, Status,
+    First Seen, Notes) at indices 6-9, update scraper columns (0-5) from
+    new data. For new URLs: add as-is.
+    """
+    USER_COLS = {6, 7, 8, 9}  # Fit, Status, First Seen, Notes
+
+    merged = [SHEET_COLUMNS]
+    seen_in_new: set[str] = set()
+
+    for row in new_rows[1:]:
+        if len(row) < len(SHEET_COLUMNS):
+            row = row + [""] * (len(SHEET_COLUMNS) - len(row))
+        url = row[4].strip()
+        seen_in_new.add(url)
+
+        if url in existing_rows:
+            existing = existing_rows[url][:]
+            for i in range(len(SHEET_COLUMNS)):
+                if i not in USER_COLS:
+                    existing[i] = row[i] if row[i] else existing[i]
+            merged.append(existing)
+        else:
+            merged.append(row)
+
+    for url, existing_row in existing_rows.items():
+        if url not in seen_in_new:
+            merged.append(existing_row)
+
+    return merged
 
 
 def create_or_get_sheet(gc, title: str, sheet_id: str = None):
@@ -192,7 +362,6 @@ def create_or_get_sheet(gc, title: str, sheet_id: str = None):
             print(f"Error: Sheet with ID '{sheet_id}' not found.", file=sys.stderr)
             sys.exit(1)
 
-    # Create a new sheet with a unique name
     base_title = title or "Job Search Results"
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
     sheet_title = f"{base_title} ({timestamp})"
@@ -200,36 +369,49 @@ def create_or_get_sheet(gc, title: str, sheet_id: str = None):
     try:
         sh = gc.create(sheet_title)
         print(f"Created new sheet: {sheet_title}", file=sys.stderr)
-        # Share with the owner (the authenticated account already has access)
+        _save_last_sheet_id(sh.id)
         return sh
     except Exception as e:
+        _check_auth_scope_error(e)
         print(f"Error creating sheet: {e}", file=sys.stderr)
         sys.exit(1)
 
 
-def update_sheet(sh, rows: list[list]):
-    """Write data to the first worksheet."""
+def update_sheet(sh, rows: list[list], merge_existing: bool = False):
+    """Write data to the first worksheet.
+
+    If merge_existing is True, existing rows are read from the sheet and
+    merged with new data: user-edited columns (Fit, Status, First Seen,
+    Notes) are preserved, scraper columns are updated, and new listings
+    are appended.
+    """
     try:
-        # Get or create the first worksheet
+        worksheet = None
         try:
             worksheet = sh.get_worksheet(0)
-            if worksheet:
-                # Clear existing content
-                worksheet.clear()
         except Exception:
             pass
 
-        # If no worksheet exists, add one
         if not worksheet:
             worksheet = sh.add_worksheet(
                 title="Jobs", rows=len(rows), cols=len(SHEET_COLUMNS)
             )
+            merge_existing = False
 
-        # Update the entire range at once
+        if merge_existing:
+            existing_rows = read_existing_rows(worksheet)
+            # ponytail: merge, not replace; preserves manual Status/Fit/Notes edits
+            rows = merge_rows(rows, existing_rows)
+            print(
+                f"Merged with existing sheet ({len(existing_rows)} existing rows)",
+                file=sys.stderr,
+            )
+        else:
+            worksheet.clear()
+
         cell_range = f"A1:{chr(64 + len(SHEET_COLUMNS))}{len(rows)}"
-        worksheet.update(cell_range, rows, value_input_option="USER_ENTERED")
+        worksheet.update(rows, cell_range, value_input_option="USER_ENTERED")
 
-        # Format the header row
         worksheet.format(
             "A1:J1",
             {
@@ -241,17 +423,13 @@ def update_sheet(sh, rows: list[list]):
             },
         )
 
-        # Auto-resize columns based on content
         for i, col_name in enumerate(SHEET_COLUMNS):
-            col_letter = chr(65 + i)  # A, B, C, ...
+            col_letter = chr(65 + i)
             hint = COLUMN_WIDTH_HINTS.get(col_name, 20)
             worksheet.format(
                 f"{col_letter}:{col_letter}",
-                {
-                    "textFormat": {"fontSize": 10},
-                },
+                {"textFormat": {"fontSize": 10}},
             )
-            # Set column width via Google Sheets API
             try:
                 sh.batch_update(
                     {
@@ -272,9 +450,8 @@ def update_sheet(sh, rows: list[list]):
                     }
                 )
             except Exception:
-                pass  # Column sizing is optional
+                pass
 
-        # URL column should be hyperlinked
         url_col_idx = SHEET_COLUMNS.index("URL")
         url_col_letter = chr(65 + url_col_idx)
         for row_num in range(2, len(rows) + 1):
@@ -298,10 +475,11 @@ def update_sheet(sh, rows: list[list]):
                 except Exception:
                     pass
 
-        # Freeze header row
         worksheet.freeze(rows=1)
 
+        # ponytail: writes all rows each time (even on merge), which is O(n) — fine for <<10k rows
         print(f"Written {len(rows) - 1} jobs to sheet", file=sys.stderr)
+        print(f"Sheet ID: {sh.id}", file=sys.stderr)
         print(
             f"Sheet URL: https://docs.google.com/spreadsheets/d/{sh.id}",
             file=sys.stderr,
@@ -310,6 +488,7 @@ def update_sheet(sh, rows: list[list]):
         return sh
 
     except Exception as e:
+        _check_auth_scope_error(e)
         print(f"Error updating sheet: {e}", file=sys.stderr)
         sys.exit(1)
 
@@ -336,7 +515,13 @@ def main():
         "--sheet-id",
         type=str,
         default=None,
-        help="Existing Google Sheet ID to overwrite. If omitted, creates a new sheet.",
+        help="Sheet ID to use instead of auto-detecting from last run.",
+    )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        default=False,
+        help="Clear the sheet and rewrite from scratch instead of merging.",
     )
     parser.add_argument(
         "--key",
@@ -347,13 +532,11 @@ def main():
 
     args = parser.parse_args()
 
-    # Load jobs data
     if args.input:
         data = load_jobs_from_file(args.input)
     else:
         data = load_jobs_from_stdin()
 
-    # Flatten into rows
     rows = flatten_jobs(data)
     if len(rows) <= 1:
         print("No jobs to export.", file=sys.stderr)
@@ -361,12 +544,18 @@ def main():
 
     print(f"Loaded {len(rows) - 1} jobs for export", file=sys.stderr)
 
-    # Authorize and create/open sheet
     gc = authorize_gspread(args.key)
-    sh = create_or_get_sheet(gc, args.title, args.sheet_id)
 
-    # Write data
-    update_sheet(sh, rows)
+    # Determine which sheet to use
+    sheet_id = args.sheet_id
+    if not sheet_id:
+        sheet_id = _load_last_sheet_id()
+
+    sh = create_or_get_sheet(gc, args.title, sheet_id)
+    _save_last_sheet_id(sh.id)
+
+    merge_existing = not args.overwrite
+    update_sheet(sh, rows, merge_existing=merge_existing)
 
 
 if __name__ == "__main__":

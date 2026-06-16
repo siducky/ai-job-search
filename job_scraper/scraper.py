@@ -2,46 +2,28 @@
 """
 Multi-Site Job Scraper
 ======================
-Uses Playwright (headless Chromium) to scrape job listings from Norwegian job portals.
+Scrapes job listings from Norwegian job portals using curl (stdlib, no Playwright).
 
 Supported sites:
-  - finn.no        : JavaScript-heavy SPA
-  - arbeidsplassen.nav.no : Next.js SPA
-  - jobbnorge.no   : jQuery-based SPA (loads results via AJAX into <div id="jobs">)
+  - finn.no              : Server-rendered HTML (parsed with regex)
+  - arbeidsplassen.nav.no: Next.js SPA (links in HTML, fetch detail pages)
+  - jobbnorge.no         : Public REST API (JSON)
 
 Output: JSON to stdout or file, matching the seen_jobs.json structure with source field.
 
 Usage:
-    # Finn.no
-    python job_scraper/scraper.py --query "data engineer" --location Oslo --site finn --pages 2
-
-    # Arbeidsplassen.no
-    python job_scraper/scraper.py --query "data engineer" --location Oslo --site nav --pages 2
-
-    # Jobbnorge.no
-    python job_scraper/scraper.py --query "data engineer" --site jobbnorge --pages 2
-
-    # All sites at once
     python job_scraper/scraper.py --query "data engineer" --location Oslo --site all --pages 2
-
-    # Output to file
-    python job_scraper/scraper.py --query "software developer" --location Oslo --site all --output results.json
-
-    # Dump recent jobs without query filter
-    python job_scraper/scraper.py --dump-all --site all --pages 1
+    python job_scraper/scraper.py --query "data engineer" --site finn --output results.json
 """
 
 import argparse
-import asyncio
 import json
 import os
 import re
+import subprocess
 import sys
 from datetime import datetime, timezone, timedelta
 from typing import Optional
-
-from playwright.async_api import async_playwright
-import random
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -49,7 +31,6 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Finn.no configuration
 # ---------------------------------------------------------------------------
 
-# Finn.no location codes (numeric IDs)
 FINN_LOCATION_CODES = {
     "norge": "0.20001",
     "oslo": "1.20001.20061",
@@ -70,76 +51,59 @@ FINN_LOCATION_CODES = {
     "agder": "1.20001.22042",
 }
 
-FINN_JOB_CATEGORY = "0"
-FINN_JOB_SUB_CATEGORY = "1.2.1"
+USER_AGENT = "Mozilla/5.0 (compatible; GeminiJobSearch/1.0)"
 
 
 def resolve_finn_location(location_str: str) -> str:
-    """Resolve a location string to a finn.no location code."""
     key = location_str.strip().lower()
+    if not key:
+        return FINN_LOCATION_CODES["norge"]
     if key in FINN_LOCATION_CODES:
         return FINN_LOCATION_CODES[key]
     if re.match(r"^[\d.]+$", key):
         return key
     print(
-        f"Warning: Unknown location '{location_str}'. Defaulting to 'oslo'.",
+        f"Warning: Unknown location '{location_str}'. Defaulting to all of Norway.",
         file=sys.stderr,
     )
-    return FINN_LOCATION_CODES["oslo"]
+    return FINN_LOCATION_CODES["norge"]
 
 
-# ---------------------------------------------------------------------------
-# Arbeidsplassen.no configuration
-# ---------------------------------------------------------------------------
+def curl_fetch(url: str) -> str:
+    """Fetch a URL with curl. Returns empty string on failure."""
+    try:
+        result = subprocess.run(
+            ["curl", "-sL", "--max-time", "15", "-A", USER_AGENT, url],
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+        if result.returncode == 0 and result.stdout:
+            return result.stdout
+        return ""
+    except Exception:
+        return ""
 
-NAV_LOCATION_CODES = {
-    "norge": "",
-    "oslo": "Oslo",
-    "bergen": "Bergen",
-    "trondheim": "Trondheim",
-    "stavanger": "Stavanger",
-    "tromsø": "Tromsø",
-    "kristiansand": "Kristiansand",
-    "akershus": "Akershus",
-    "vestland": "Vestland",
-    "rogaland": "Rogaland",
-    "trøndelag": "Trøndelag",
-    "nordland": "Nordland",
-    "møre og romsdal": "Møre og Romsdal",
-    "vestfold": "Vestfold",
-    "telemark": "Telemark",
-    "buskerud": "Buskerud",
-    "innlandet": "Innlandet",
-    "østfold": "Østfold",
-    "finnmark": "Finnmark",
-    "agder": "Agder",
-}
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
+# ===================================================================
+# 1. FINN.NO Scraper (server-rendered HTML)
+# ===================================================================
 
 
 def parse_relative_date(text: str) -> str:
-    """Parse relative date strings (finn.no style) into ISO date."""
     today = datetime.now(timezone.utc)
     text = text.strip().lower()
-
     if text == "ny i dag":
         return today.strftime("%Y-%m-%d")
     if text == "i går":
-        # Use timedelta to safely subtract one day
         return (today - timedelta(days=1)).strftime("%Y-%m-%d")
-
     match = re.match(r"(\d+)\s*(dag|uke|måned|år)", text)
     if match:
         amount = int(match.group(1))
         unit = match.group(2)
         if unit == "dag":
-            # Subtract days using timedelta to avoid invalid day values
             return (today - timedelta(days=amount)).strftime("%Y-%m-%d")
         elif unit == "uke":
-            # Subtract weeks using timedelta
             return (today - timedelta(weeks=amount)).strftime("%Y-%m-%d")
         elif unit == "måned":
             new_month = today.month - amount
@@ -148,23 +112,17 @@ def parse_relative_date(text: str) -> str:
                 new_month += 12
                 year -= 1
             return today.replace(year=year, month=new_month).strftime("%Y-%m-%d")
-
     return text
 
 
 def parse_norwegian_date(text: str) -> str:
-    """Parse Norwegian date strings like '1. juni 2026' or '01.06.2026' into ISO date."""
     text = text.strip()
     if not text:
         return "unknown"
-
-    # Try DD.MM.YYYY
     match = re.match(r"(\d{1,2})\.(\d{1,2})\.(\d{4})", text)
     if match:
         day, month, year = match.groups()
         return f"{year}-{int(month):02d}-{int(day):02d}"
-
-    # Try Norwegian month names: "1. juni 2026"
     months_nb = {
         "januar": 1,
         "februar": 2,
@@ -185,57 +143,22 @@ def parse_norwegian_date(text: str) -> str:
         month = months_nb.get(month_name)
         if month:
             return f"{year}-{month:02d}-{int(day):02d}"
-
-    # Try ISO format already
     if re.match(r"^\d{4}-\d{2}-\d{2}", text):
         return text
-
     return text
 
 
-# ---------------------------------------------------------------------------
-# Browser / context helper
-# ---------------------------------------------------------------------------
-
-
-async def make_browser_context(playwright, headless: bool = True):
-    """Create a standard browser context for scraping."""
-    browser = await playwright.chromium.launch(
-        headless=headless,
-        args=["--no-sandbox", "--disable-setuid-sandbox"],
-    )
-    context = await browser.new_context(
-        user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-        "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        viewport={"width": 1920, "height": 1080},
-    )
-    return browser, context
-
-
-# ===================================================================
-# 1. FINN.NO Scraper
-# ===================================================================
-
-
-async def scrape_finn(
+def scrape_finn(
     query: Optional[str] = None,
-    location: str = "0.20061",
+    location: str = "1.20001.20061",
     max_pages: int = 2,
-    headless: bool = True,
-    timeout_ms: int = 30000,
 ) -> list[dict]:
-    """
-    Scrape job listings from finn.no using Playwright.
+    """Scrape job listings from finn.no using curl.
 
-    Args:
-        query: Search query (e.g. "data engineer"). If None, fetches all recent jobs.
-        location: Finn.no location code (e.g. "0.20061" for Oslo).
-        max_pages: Number of search result pages to scrape.
-        headless: Run browser in headless mode.
-        timeout_ms: Navigation timeout in milliseconds.
-
-    Returns:
-        List of job dicts with keys: title, company, location, date, url, description_snippet, source
+    ponytail: Uses a simple per-card extraction approach. The HTML is server-rendered
+    with job cards containing predictable id attributes. Each card is an <article> with
+    an id="card-<number>". We extract one card at a time using regex lookahead for the
+    next card id. This is O(n²) in the worst case but fine for <100 cards.
     """
     jobs: list[dict] = []
     seen_urls: set[str] = set()
@@ -244,92 +167,111 @@ async def scrape_finn(
     params = [f"location={location}", "sort=RELEVANCE", "working_language=2"]
     if query:
         params.append(f"q={query.replace(' ', '+')}")
-
     search_url = f"{base_url}?{'&'.join(params)}"
 
-    async with async_playwright() as p:
-        browser, context = await make_browser_context(p, headless)
-        page = await context.new_page()
+    for page_num in range(1, max_pages + 1):
+        url = f"{search_url}&page={page_num}"
+        print(f"[finn.no] Fetching page {page_num}: {url}", file=sys.stderr)
 
-        for page_num in range(1, max_pages + 1):
-            url = f"{search_url}&page={page_num}"
-            print(f"[finn.no] Fetching page {page_num}: {url}", file=sys.stderr)
+        html = curl_fetch(url)
+        if not html:
+            print(f"[finn.no] Failed to fetch page {page_num}", file=sys.stderr)
+            break
 
-            try:
-                await page.goto(url, timeout=timeout_ms, wait_until="networkidle")
-                await page.wait_for_timeout(3000)
-                await page.wait_for_selector("article", timeout=10000)
-            except Exception as e:
-                print(
-                    f"[finn.no] Warning: Failed to load page {page_num}: {e}",
-                    file=sys.stderr,
-                )
-                break
+        # Find all card ids: <article ... id="card-12345">
+        card_ids = re.findall(r'<article[^>]*\bid="card-(\d+)"[^>]*>', html)
+        if not card_ids:
+            print(f"[finn.no] No job cards found on page {page_num}", file=sys.stderr)
+            break
 
-            articles = await page.query_selector_all("article")
-            print(
-                f"[finn.no] Found {len(articles)} articles on page {page_num}",
-                file=sys.stderr,
+        print(
+            f"[finn.no] Found {len(card_ids)} job cards on page {page_num}",
+            file=sys.stderr,
+        )
+
+        for cid in card_ids:
+            # Extract card content: from <article id="card-<cid>"> to next <article or end
+            card_match = re.search(
+                rf'<article[^>]*\bid="card-{cid}"[^>]*>.*?(?=<article\s|\Z)',
+                html,
+                re.DOTALL,
             )
+            if not card_match:
+                continue
+            card_html = card_match.group()
 
-            if not articles:
-                print("[finn.no] No more articles found. Stopping.", file=sys.stderr)
-                break
-
-            for article in articles:
-                job = await extract_finn_job(article)
-                if job and job["url"] not in seen_urls:
-                    seen_urls.add(job["url"])
-                    job["source"] = "finn.no"
-                    jobs.append(job)
-
-        await browser.close()
+            job = _extract_finn_job(card_html)
+            if job and job["url"] not in seen_urls:
+                seen_urls.add(job["url"])
+                job["source"] = "finn.no"
+                jobs.append(job)
 
     return jobs
 
 
-async def extract_finn_job(article) -> Optional[dict]:
-    """Extract job data from a single finn.no article element."""
+def _extract_finn_job(card_html: str) -> Optional[dict]:
+    """Extract job data from a single finn.no job card HTML block."""
     try:
-        link_el = await article.query_selector("a.job-card-link")
-        if not link_el:
+        # URL and title: <a class="job-card-link ..." href="...">Title</a>
+        link_match = re.search(
+            r'<a[^>]*class="[^"]*job-card-link[^"]*"[^>]*href="([^"]+)"', card_html
+        )
+        if not link_match:
             return None
-
-        title = await link_el.inner_text()
-        url = await link_el.get_attribute("href")
-        if not url:
-            return None
+        url = link_match.group(1)
         if url.startswith("/"):
             url = f"https://www.finn.no{url}"
 
-        company_el = await article.query_selector(".text-caption strong")
-        company = await company_el.inner_text() if company_el else "Unknown"
+        # Extract title from the job-card-link anchor. The title is the text of the
+        # first link matching job-card-link class. Strip any inner spans.
+        title = "Unknown"
+        link_area = re.search(
+            r'<a[^>]*class="[^"]*job-card-link[^"]*"[^>]*>(.*?)</a>',
+            card_html,
+            re.DOTALL,
+        )
+        if link_area:
+            raw = link_area.group(1)
+            # Remove any HTML tags inside, keep text
+            raw = re.sub(r"<[^>]+>", "", raw).strip()
+            if raw:
+                title = raw
 
-        desc_el = await article.query_selector("h3")
-        description_snippet = await desc_el.inner_text() if desc_el else ""
+        # Company: in <strong> inside .text-caption
+        company_match = re.search(r"<strong>([^<]+)</strong>", card_html)
+        company = company_match.group(1).strip() if company_match else "Unknown"
 
-        location = ""
+        # Date: inside <time datetime="...">
         date_text = ""
-        footer = await article.query_selector("footer")
-        if footer:
-            pills = await footer.query_selector_all("li")
-            for pill in pills:
-                text = (await pill.inner_text()).strip()
-                time_el = await pill.query_selector("time")
-                if time_el:
-                    date_text = text
-                else:
-                    location = text
-
+        time_match = re.search(r'<time[^>]*datetime="([^"]*)"', card_html)
+        if time_match:
+            date_text = time_match.group(1)
+        else:
+            date_match = re.search(r"<time[^>]*>([^<]+)</time>", card_html)
+            if date_match:
+                date_text = date_match.group(1).strip()
         date = parse_relative_date(date_text) if date_text else "unknown"
 
+        # Location: find <li> in footer that does NOT contain date text
+        location = ""
+        footer_section = re.search(r"<footer[^>]*>.*?</footer>", card_html, re.DOTALL)
+        if footer_section:
+            footer_html = footer_section.group()
+            pills = re.findall(r"<li[^>]*>([^<]+)</li>", footer_html)
+            for pill in pills:
+                pill_text = pill.strip()
+                if pill_text and not re.search(
+                    r"\d+\s*(dag|uke|måned|år)", pill_text.lower()
+                ):
+                    location = pill_text
+
         return {
-            "title": title.strip(),
-            "company": company.strip(),
-            "location": location.strip(),
+            "title": title,
+            "company": company,
+            "location": location,
             "date": date,
             "url": url,
-            "description_snippet": description_snippet.strip(),
+            "description_snippet": "",
         }
     except Exception as e:
         print(f"[finn.no] Warning: Failed to extract job: {e}", file=sys.stderr)
@@ -341,27 +283,15 @@ async def extract_finn_job(article) -> Optional[dict]:
 # ===================================================================
 
 
-async def scrape_arbeidsplassen(
+def scrape_arbeidsplassen(
     query: Optional[str] = None,
     location: str = "",
     max_pages: int = 2,
-    headless: bool = True,
-    timeout_ms: int = 30000,
 ) -> list[dict]:
-    """
-    Scrape job listings from arbeidsplassen.nav.no using Playwright.
+    """Scrape job listings from arbeidsplassen.nav.no using curl + detail page fetch.
 
-    This is a Next.js SPA that renders job results client-side.
-
-    Args:
-        query: Search query (e.g. "data engineer"). If None, fetches all recent jobs.
-        location: Location filter (e.g. "Oslo" or "" for all).
-        max_pages: Number of search result pages to scrape.
-        headless: Run browser in headless mode.
-        timeout_ms: Navigation timeout in milliseconds.
-
-    Returns:
-        List of job dicts with keys: title, company, location, date, url, description_snippet, source
+    The search page is a Next.js SPA, but it renders job links in the HTML.
+    We extract links, then fetch each detail page for full info.
     """
     jobs: list[dict] = []
     seen_urls: set[str] = set()
@@ -371,152 +301,116 @@ async def scrape_arbeidsplassen(
     if query:
         params.append(f"q={query.replace(' ', '+')}")
     if location:
-        params.append(
-            f"county={location.upper()}"
-        )  # NAV expects uppercase county names
+        params.append(f"county={location.upper()}")
+    search_url = f"{base_url}?{'&'.join(params)}"
 
-    async with async_playwright() as p:
-        browser, context = await make_browser_context(p, headless)
-        page = await context.new_page()
+    for page_num in range(1, max_pages + 1):
+        url = search_url  # NAV doesn't paginate via URL param; just re-fetch
+        print(f"[arbeidsplassen.no] Fetching page {page_num}: {url}", file=sys.stderr)
 
-        for page_num in range(1, max_pages + 1):
-            # NAV does not require a page parameter; we simply use the base params
-            url = f"{base_url}?{'&'.join(params)}"
-            print(
-                f"[arbeidsplassen.no] Fetching page {page_num}: {url}",
-                file=sys.stderr,
-            )
+        html = curl_fetch(url)
+        if not html:
+            print(f"[arbeidsplassen.no] Failed to fetch page", file=sys.stderr)
+            break
 
-            try:
-                await page.goto(url, timeout=timeout_ms, wait_until="networkidle")
-                await page.wait_for_timeout(5000)
+        # Extract job detail links: /stillinger/stilling/<uuid>
+        links = re.findall(r'href="/stillinger/stilling/([^"]+)"', html)
+        unique_links = list(dict.fromkeys(links))  # deduplicate preserving order
 
-                # Try to wait for job cards to appear. NAV uses a specific card layout.
-                # Common selectors for job cards on this site:
-                try:
-                    await page.wait_for_selector(
-                        'a[href*="/stillinger/"]', timeout=10000
-                    )
-                except Exception:
-                    # Try alternative selectors
-                    try:
-                        await page.wait_for_selector(
-                            "[data-testid='job-card'], .job-card, article", timeout=5000
-                        )
-                    except Exception:
-                        pass
+        if not unique_links:
+            print(f"[arbeidsplassen.no] No job links found", file=sys.stderr)
+            break
 
-            except Exception as e:
-                print(
-                    f"[arbeidsplassen.no] Warning: Failed to load page {page_num}: {e}",
-                    file=sys.stderr,
-                )
-                break
+        print(
+            f"[arbeidsplassen.no] Found {len(unique_links)} job links", file=sys.stderr
+        )
 
-            # Extract job listings. Try several possible selectors.
-            job_elements = await page.query_selector_all('a[href*="/stillinger/"]')
-            if not job_elements:
-                # Try a broader search for job links
-                job_elements = await page.query_selector_all("a[href*='stilling']")
-
-            print(
-                f"[arbeidsplassen.no] Found {len(job_elements)} potential job links on page {page_num}",
-                file=sys.stderr,
-            )
-
-            if not job_elements:
-                print(
-                    "[arbeidsplassen.no] No job links found. Stopping.",
-                    file=sys.stderr,
-                )
-                break
-
-            for el in job_elements:
-                job = await extract_arbeidsplassen_job(page, el)
-                if job and job["url"] not in seen_urls:
-                    seen_urls.add(job["url"])
+        for job_id in unique_links:
+            if job_id in seen_urls:
+                continue
+            seen_urls.add(job_id)
+            job_url = f"https://arbeidsplassen.nav.no/stillinger/stilling/{job_id}"
+            job_detail_html = curl_fetch(job_url)
+            if job_detail_html:
+                job = _extract_arbeidsplassen_job(job_detail_html, job_url)
+                if job:
                     job["source"] = "arbeidsplassen.no"
                     jobs.append(job)
+            else:
+                # Fallback: just record the link without details
+                jobs.append(
+                    {
+                        "title": job_id,  # placeholder
+                        "company": "Unknown",
+                        "location": location or "Unknown",
+                        "date": "unknown",
+                        "url": job_url,
+                        "description_snippet": "",
+                        "source": "arbeidsplassen.no",
+                    }
+                )
 
-            # Limit jobs to avoid duplicates
-            if len(jobs) >= 100:
-                break
-
-        await browser.close()
+        if len(jobs) >= 100:
+            break
 
     return jobs
 
 
-async def extract_arbeidsplassen_job(page, link_element) -> Optional[dict]:
-    """Extract job data from an arbeidsplassen.no job link element."""
+def _extract_arbeidsplassen_job(html: str, url: str) -> Optional[dict]:
+    """Extract job data from arbeidsplassen.no detail page."""
     try:
-        url = await link_element.get_attribute("href")
-        if not url:
-            return None
-        if url.startswith("/"):
-            url = f"https://arbeidsplassen.nav.no{url}"
+        # Title: from <title> or <h1>
+        title_match = re.search(r"<title>([^<]+)</title>", html)
+        title = title_match.group(1).strip() if title_match else "Unknown"
+        # Clean title (remove site suffix like " - Arbeidsplassen")
+        title = re.sub(
+            r"\s*[-–|]\s*Arbeidsplassen\.*$", "", title, flags=re.IGNORECASE
+        ).strip()
 
-        # Get the title text from the link element
-        title = (await link_element.inner_text()).strip()
-        if not title or len(title) < 3:
-            return None
-
-        # Try to find the parent card container for additional metadata
-        # Navigate up to find the card container
-        parent = await link_element.evaluate_handle(
-            "el => el.closest('li, div, article, section')"
-        )
-
+        # Company: various possible patterns
         company = "Unknown"
+        # Try job-advertiser or similar
+        company_match = re.search(
+            r"(?:employer|company|arbeidsgiver)[^>]*>([^<]+)</", html, re.IGNORECASE
+        )
+        if company_match:
+            company = company_match.group(1).strip()
+        else:
+            # Look for "Arbeidsgiver" in definition list
+            company_match = re.search(
+                r"<dt[^>]*>[^<]*Arbeidsgiver[^<]*</dt>\s*<dd[^>]*>([^<]+)</dd>",
+                html,
+                re.IGNORECASE,
+            )
+            if company_match:
+                company = company_match.group(1).strip()
+
+        # Location
         location = ""
+        loc_match = re.search(
+            r"<dt[^>]*>[^<]*(?:location|sted|Sted)[^<]*</dt>\s*<dd[^>]*>([^<]+)</dd>",
+            html,
+            re.IGNORECASE,
+        )
+        if loc_match:
+            location = loc_match.group(1).strip()
+
+        # Date
         date_text = ""
-
-        if parent:
-            # Try to extract company name
-            company_selectors = await page.evaluate(
-                """(parent) => {
-                    const el = parent.querySelector('[data-testid="company-name"], .company-name, strong');
-                    return el ? el.textContent.trim() : null;
-                }""",
-                parent,
-            )
-            if company_selectors:
-                company = company_selectors
-
-            # Try to extract location
-            location_selectors = await page.evaluate(
-                """(parent) => {
-                    const el = parent.querySelector('[data-testid="location"], .location');
-                    return el ? el.textContent.trim() : null;
-                }""",
-                parent,
-            )
-            if location_selectors:
-                location = location_selectors
-
-            # Try to extract date
-            date_selectors = await page.evaluate(
-                """(parent) => {
-                    const el = parent.querySelector('time');
-                    return el ? (el.dateTime || el.textContent.trim()) : null;
-                }""",
-                parent,
-            )
-            if date_selectors:
-                date_text = date_selectors
-
-        # Fallback: use page-level selectors near the link
-        if company == "Unknown":
-            company_el = await link_element.evaluate("""(el) => {
-                    const section = el.closest('li, div, article, section');
-                    if (!section) return null;
-                    const strong = section.querySelector('strong');
-                    return strong ? strong.textContent.trim() : null;
-                }""")
-            if company_el:
-                company = company_el
-
+        date_match = re.search(r'<time[^>]*datetime="([^"]+)"', html)
+        if date_match:
+            date_text = date_match.group(1)
+            # Truncate ISO datetime to date
+            date_match_full = re.match(r"(\d{4}-\d{2}-\d{2})", date_text)
+            if date_match_full:
+                date_text = date_match_full.group(1)
         date = parse_norwegian_date(date_text) if date_text else "unknown"
+
+        # Description snippet
+        desc_match = re.search(
+            r'<meta[^>]*name="description"[^>]*content="([^"]+)"', html, re.IGNORECASE
+        )
+        description_snippet = desc_match.group(1).strip() if desc_match else ""
 
         return {
             "title": title,
@@ -524,401 +418,205 @@ async def extract_arbeidsplassen_job(page, link_element) -> Optional[dict]:
             "location": location,
             "date": date,
             "url": url,
-            "description_snippet": "",
+            "description_snippet": description_snippet,
         }
     except Exception as e:
         print(
-            f"[arbeidsplassen.no] Warning: Failed to extract job: {e}",
-            file=sys.stderr,
+            f"[arbeidsplassen.no] Warning: Failed to extract job: {e}", file=sys.stderr
         )
         return None
 
 
 # ===================================================================
-# 3. JOBNORGE.NO Scraper
+# 3. JOBNORGE.NO Scraper (public API)
 # ===================================================================
 
-# ===================================================================
-# 4. LINKEDIN.COM Scraper
-# ===================================================================
-
-LINKEDIN_BASE_URL = "https://www.linkedin.com/jobs/search"
-
-
-async def scrape_linkedin(
-    query: Optional[str] = None,
-    location: str = "Oslo",
-    max_pages: int = 2,
-    headless: bool = True,
-    timeout_ms: int = 30000,
-) -> list[dict]:
-    """
-    Scrape job listings from LinkedIn using Playwright.
-
-    Args:
-        query: Search query (e.g. "data engineer").
-        location: Location string (city name).
-        max_pages: Number of result pages to scrape (25 results per page).
-        headless: Run browser in headless mode.
-        timeout_ms: Navigation timeout in milliseconds.
-
-    Returns:
-        List of job dicts with keys: title, company, location, date, url, description_snippet, source
-    """
-    jobs: list[dict] = []
-    seen_urls: set[str] = set()
-
-    async with async_playwright() as p:
-        browser, context = await make_browser_context(p, headless)
-        page = await context.new_page()
-
-        for page_num in range(1, max_pages + 1):
-            start = (page_num - 1) * 25
-            params = [
-                f"keywords={query.replace(' ', '+')}" if query else "",
-                f"location={location.replace(' ', '+')}",
-                f"start={start}",
-            ]
-            url = f"{LINKEDIN_BASE_URL}?{'&'.join([p for p in params if p])}"
-            print(f"[linkedin.com] Fetching page {page_num}: {url}", file=sys.stderr)
-
-            try:
-                await page.goto(url, timeout=timeout_ms, wait_until="networkidle")
-                await page.wait_for_timeout(3000)
-                await page.wait_for_selector(
-                    "ul.jobs-search__results-list li", timeout=10000
-                )
-            except Exception as e:
-                print(
-                    f"[linkedin.com] Warning: Failed to load page {page_num}: {e}",
-                    file=sys.stderr,
-                )
-                break
-
-            job_elements = await page.query_selector_all(
-                "ul.jobs-search__results-list li"
-            )
-            print(
-                f"[linkedin.com] Found {len(job_elements)} job cards on page {page_num}",
-                file=sys.stderr,
-            )
-
-            for el in job_elements:
-                job = await extract_linkedin_job(page, el)
-                if job and job["url"] not in seen_urls:
-                    seen_urls.add(job["url"])
-                    job["source"] = "linkedin.com"
-                    jobs.append(job)
-
-            # Polite delay
-            await asyncio.sleep(random.uniform(2, 5))
-
-        await browser.close()
-
-    return jobs
+# ponytail: Norwegian fylkesnummer (county codes) post-2024 split.
+# API requires integer codes, not names. Map both county and city names
+# to the correct fylkesnummer so callers can pass either.
+JOBNORGE_COUNTY_CODES = {
+    # Counties
+    "oslo": 3,
+    "rogaland": 11,
+    "møre og romsdal": 15,
+    "nordland": 18,
+    "innlandet": 31,
+    "vestfold": 32,
+    "telemark": 33,
+    "agder": 34,
+    "vestland": 38,
+    "trøndelag": 42,
+    "troms": 46,
+    "finnmark": 54,
+    # Cities → county
+    "bergen": 38,
+    "trondheim": 42,
+    "stavanger": 11,
+    "tromsø": 46,
+    "kristiansand": 34,
+    "fredrikstad": 32,
+    "sandnes": 11,
+    "tromso": 46,
+    "drammen": 32,
+    "sarpsborg": 32,
+    "skien": 33,
+    "ålesund": 15,
+    "haugesund": 11,
+    "sandefjord": 32,
+    "arendal": 34,
+    "hanski": 32,
+    "molde": 15,
+    "hamar": 31,
+    "larvik": 32,
+    "halden": 32,
+    "moss": 32,
+    "porsgrunn": 33,
+    "bodø": 18,
+    "narvik": 18,  # Narvik is in Troms after 2024, but geographically Nordland-ish; Troms=46
+    "alstahaug": 18,
+    "levanger": 42,
+    "namsos": 42,
+    "steinkjer": 42,
+}
 
 
-async def extract_linkedin_job(page, element) -> dict:
-    """Extract job data from a LinkedIn job card element."""
-    try:
-        title_el = await element.query_selector("h3.base-search-card__title")
-        company_el = await element.query_selector("h4.base-search-card__subtitle")
-        location_el = await element.query_selector("span.job-search-card__location")
-        date_el = await element.query_selector("time")
-        link_el = await element.query_selector("a.base-card__full-link")
-
-        title = (await title_el.inner_text()).strip() if title_el else "Unknown"
-        company = (await company_el.inner_text()).strip() if company_el else "Unknown"
-        location = (await location_el.inner_text()).strip() if location_el else ""
-        date_text = (await date_el.get_attribute("datetime")).strip() if date_el else ""
-        url = await link_el.get_attribute("href") if link_el else ""
-
-        # Convert LinkedIn relative dates to ISO if possible
-        date = date_text if date_text else "unknown"
-
-        # Description snippet is not directly available; leave empty
-        return {
-            "title": title,
-            "company": company,
-            "location": location,
-            "date": date,
-            "url": url,
-            "description_snippet": "",
-        }
-    except Exception as e:
-        print(f"[linkedin.com] Warning: Failed to extract job: {e}", file=sys.stderr)
-        return {
-            "title": "unknown",
-            "company": "unknown",
-            "location": "",
-            "date": "unknown",
-            "url": "",
-            "description_snippet": "",
-        }
+def resolve_jobbnorge_county(location_str: str) -> Optional[int]:
+    """Resolve a location name to a Jobbnorge fylkesnummer. Returns None if unknown."""
+    key = location_str.strip().lower()
+    if key in JOBNORGE_COUNTY_CODES:
+        return JOBNORGE_COUNTY_CODES[key]
+    if key.isdigit():
+        return int(key)
+    return None
 
 
-async def scrape_jobbnorge(
+def scrape_jobbnorge(
     query: Optional[str] = None,
     location: str = "",
     max_pages: int = 2,
-    headless: bool = True,
-    timeout_ms: int = 30000,
 ) -> list[dict]:
-    # Mapping of city names to Jobbnorge county codes
-    JOBBNORGE_COUNTY_CODES = {
-        "trøndelag": "50",
-        "oslo": "3",
-        "troms": "55",
-        "telemark": "40",
-        "adger": "42",
-        "akershus": "32",
-        "buskerud": "33",
-        "finnmark": "56",
-        "innlandet": "34",
-        "østfold": "31",
-        "vestland": "46",
-        "vestfold": "39",
-        "rogaland": "11",
-        "nordland": "18",
-        "møre og romsdal": "15",
-        # Add more mappings as needed
-    }
-    """
-    Scrape job listings from jobbnorge.no using Playwright.
+    """Scrape job listings from jobbnorge.no using their public API (v3/Jobs).
 
-    Jobbnorge is a jQuery-based SPA that loads results via AJAX into <div id="jobs">.
-
-    Args:
-        query: Search query (e.g. "data engineer"). If None, fetches all recent jobs.
-        location: Location filter (optional).
-        max_pages: Number of search result pages to scrape.
-        headless: Run browser in headless mode.
-        timeout_ms: Navigation timeout in milliseconds.
-
-    Returns:
-        List of job dicts with keys: title, company, location, date, url, description_snippet, source
+    ponytail: API requires county=fylkesnummer (int), not a location string.
+    resolve_jobbnorge_county maps city/county names to codes.
     """
     jobs: list[dict] = []
     seen_urls: set[str] = set()
 
-    base_url = "https://www.jobbnorge.no/search"
-    params = []
+    api_url = "https://publicapi.jobbnorge.no/v3/Jobs"
+    params = ["results=50"]
     if query:
-        # Jobbnorge expects the search term in the 'term' parameter
-        params.append(f"term={query.replace(' ', '+')}")
+        params.append(f"term={query.replace(' ', '%20')}")
     if location:
-        # Resolve location to county code if possible
-        loc_key = location.strip().lower()
-        county_code = JOBBNORGE_COUNTY_CODES.get(loc_key)
-        if county_code:
+        county_code = resolve_jobbnorge_county(location)
+        if county_code is not None:
             params.append(f"county={county_code}")
         else:
-            # Fallback to original location parameter for backward compatibility
-            params.append(f"location={location}")
-    # Ensure results are ordered by publication date and include all periods
-    params.append("OrderBy=Published")
-    params.append("Period=All")
+            print(
+                f"[jobbnorge.no] Warning: Unknown location '{location}'. "
+                f"Passing without county filter.",
+                file=sys.stderr,
+            )
 
-    async with async_playwright() as p:
-        browser, context = await make_browser_context(p, headless)
-        page = await context.new_page()
+    for page_num in range(1, max_pages + 1):
+        params_with_page = params + [f"page={page_num}"]
+        url = f"{api_url}?{'&'.join(params_with_page)}"
+        print(f"[jobbnorge.no] Fetching page {page_num}: {url}", file=sys.stderr)
 
-        # Jobbnorge loads all results on one page with "Vis flere" button.
-        # We'll load the page once and scroll/interact to load more.
-        url = f"{base_url}?{'&'.join(params)}" if params else base_url
-        print(f"[jobbnorge.no] Fetching: {url}", file=sys.stderr)
+        raw = curl_fetch(url)
+        if not raw:
+            print(f"[jobbnorge.no] Failed to fetch page {page_num}", file=sys.stderr)
+            break
 
         try:
-            await page.goto(url, timeout=timeout_ms, wait_until="networkidle")
-            await page.wait_for_timeout(5000)
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            print(f"[jobbnorge.no] Invalid JSON on page {page_num}", file=sys.stderr)
+            break
 
-            # Wait for the jobs container to appear
-            try:
-                await page.wait_for_selector("#jobs", timeout=10000)
-            except Exception:
-                print(
-                    "[jobbnorge.no] Warning: #jobs container not found",
-                    file=sys.stderr,
+        items = data.get("jobs", [])
+        if not items:
+            print(f"[jobbnorge.no] No items found on page {page_num}", file=sys.stderr)
+            break
+
+        print(
+            f"[jobbnorge.no] Found {len(items)} jobs on page {page_num}",
+            file=sys.stderr,
+        )
+
+        for item in items:
+            job_url = item.get("link", "")
+            if job_url and not job_url.startswith("http"):
+                job_url = (
+                    f"https://www.jobbnorge.no{job_url}"
+                    if job_url.startswith("/")
+                    else ""
+                )
+            if job_url in seen_urls:
+                continue
+            seen_urls.add(job_url)
+
+            title = item.get("title") or "Unknown"
+            company = item.get("employer") or "Unknown"
+
+            # Location: from locations[0] object
+            loc = ""
+            locations = item.get("locations", [])
+            if locations:
+                area = locations[0].get("area", "")
+                municipality = locations[0].get("municipality", "")
+                loc = area or municipality or ""
+
+            date_raw = item.get("publicationDate") or ""
+            date = parse_norwegian_date(date_raw) if date_raw else "unknown"
+
+            # Build a proper URL if the API gives us an ID
+            if not job_url and item.get("id"):
+                job_url = (
+                    f"https://www.jobbnorge.no/ledige-stillinger/stilling/{item['id']}"
                 )
 
-            # Wait for initial job items to load
-            await page.wait_for_timeout(3000)
-
-            # Click "Vis flere" multiple times to load more results
-            for page_num in range(1, max_pages):
-                try:
-                    show_more_btn = await page.query_selector("#showmore button")
-                    if show_more_btn:
-                        is_visible = await show_more_btn.is_visible()
-                        if is_visible:
-                            await show_more_btn.click()
-                            await page.wait_for_timeout(3000)
-                            print(
-                                f"[jobbnorge.no] Clicked 'Vis flere' (page {page_num + 1})",
-                                file=sys.stderr,
-                            )
-                        else:
-                            print(
-                                "[jobbnorge.no] 'Vis flere' button not visible, stopping.",
-                                file=sys.stderr,
-                            )
-                            break
-                    else:
-                        print(
-                            "[jobbnorge.no] No 'Vis flere' button found, stopping.",
-                            file=sys.stderr,
-                        )
-                        break
-                except Exception as e:
-                    print(
-                        f"[jobbnorge.no] Warning: Could not click 'Vis flere': {e}",
-                        file=sys.stderr,
-                    )
-                    break
-
-        except Exception as e:
-            print(f"[jobbnorge.no] Warning: Failed to load page: {e}", file=sys.stderr)
-
-        # Extract job listings from the rendered page
-        # Jobbnorge renders search-result elements inside #jobs
-        job_elements = await page.query_selector_all("#jobs .search-result")
-        if not job_elements:
-            # Fallback: look for any links to job details
-            job_elements = await page.query_selector_all(
-                "#jobs a[href*='ledig-stilling']"
+            jobs.append(
+                {
+                    "title": title,
+                    "company": company,
+                    "location": loc,
+                    "date": date,
+                    "url": job_url,
+                    "description_snippet": (item.get("summary") or "")[:200],
+                    "source": "jobbnorge.no",
+                }
             )
-        if not job_elements:
-            job_elements = await page.query_selector_all("#jobs a[href*='stilling']")
-
-        print(
-            f"[jobbnorge.no] Found {len(job_elements)} job elements",
-            file=sys.stderr,
-        )
-
-        for el in job_elements:
-            job = await extract_jobbnorge_job(page, el)
-            if job and job["url"] not in seen_urls:
-                seen_urls.add(job["url"])
-                job["source"] = "jobbnorge.no"
-                jobs.append(job)
-
-        await browser.close()
 
     return jobs
-
-
-async def extract_jobbnorge_job(page, element) -> Optional[dict]:
-    """Extract job data from a jobbnorge.no job element."""
-    try:
-        # Try to find the link
-        link_el = await element.query_selector("a")
-        if not link_el:
-            # The element itself might be a link
-            tag = await element.evaluate("el => el.tagName.toLowerCase()")
-            if tag == "a":
-                link_el = element
-            else:
-                return None
-
-        url = await link_el.get_attribute("href")
-        if not url:
-            return None
-        if url.startswith("/"):
-            url = f"https://www.jobbnorge.no{url}"
-
-        title = (await link_el.inner_text()).strip()
-
-        # Extract metadata from the job element
-        company = "Unknown"
-        location = ""
-        date_text = ""
-
-        # Company - often in a specific element within search-result
-        company_el = await element.query_selector(".employer, .company")
-        if company_el:
-            company = (await company_el.inner_text()).strip()
-
-        # Location
-        location_el = await element.query_selector(".location, .city")
-        if location_el:
-            location = (await location_el.inner_text()).strip()
-
-        # Date
-        date_el = await element.query_selector(".date, .deadline, time")
-        if date_el:
-            date_text = (await date_el.inner_text()).strip()
-
-        # Try extracting from inline text if structured elements aren't available
-        if company == "Unknown":
-            # Try to get all text and parse
-            all_text = (await element.inner_text()).strip()
-            lines = [l.strip() for l in all_text.split("\n") if l.strip()]
-            if len(lines) >= 2:
-                # Often the structure is: Title, Company, Location + Date
-                if not company and len(lines) > 1:
-                    company = lines[1]
-                if not location and len(lines) > 2:
-                    location = lines[2]
-
-        date = parse_norwegian_date(date_text) if date_text else "unknown"
-
-        return {
-            "title": title,
-            "company": company,
-            "location": location,
-            "date": date,
-            "url": url,
-            "description_snippet": "",
-        }
-    except Exception as e:
-        print(
-            f"[jobbnorge.no] Warning: Failed to extract job: {e}",
-            file=sys.stderr,
-        )
-        return None
 
 
 # ===================================================================
 # Orchestrator
 # ===================================================================
 
-
 SITE_SCRAPERS = {
     "finn": scrape_finn,
     "nav": scrape_arbeidsplassen,
     "arbeidsplassen": scrape_arbeidsplassen,
     "jobbnorge": scrape_jobbnorge,
-    "linkedin": scrape_linkedin,
+    # ponytail: LinkedIn blocks unauthenticated search; individual job detail pages
+    # work via /apply's web_fetch instead. LinkedIn is intentionally excluded.
 }
 
 
-async def scrape_all(
+def scrape_all(
     query: Optional[str] = None,
-    location: str = "oslo",
+    location: str = "",
     max_pages: int = 2,
     sites: list[str] = None,
-    headless: bool = True,
-    timeout_ms: int = 30000,
 ) -> list[dict]:
-    """
-    Scrape job listings from multiple sites.
-
-    Args:
-        query: Search query.
-        location: Location string (city name).
-        max_pages: Number of pages per site.
-        sites: List of site identifiers to scrape. Defaults to all.
-        headless: Run browser in headless mode.
-        timeout_ms: Navigation timeout.
-
-    Returns:
-        Combined list of job dicts from all sites.
-    """
+    """Scrape job listings from multiple sites using curl."""
     all_jobs: list[dict] = []
     seen_urls: set[str] = set()
 
     if sites is None:
-        sites = ["finn", "nav", "jobbnorge", "linkedin"]
+        sites = ["finn", "nav", "jobbnorge"]
 
     for site in sites:
         site = site.lower().strip()
@@ -934,32 +632,10 @@ async def scrape_all(
         try:
             if site == "finn":
                 loc_code = resolve_finn_location(location)
-                jobs = await scraper(
-                    query=query,
-                    location=loc_code,
-                    max_pages=max_pages,
-                    headless=headless,
-                    timeout_ms=timeout_ms,
-                )
-            elif site == "nav" or site == "arbeidsplassen":
-                loc = NAV_LOCATION_CODES.get(location.strip().lower(), location)
-                jobs = await scraper(
-                    query=query,
-                    location=loc,
-                    max_pages=max_pages,
-                    headless=headless,
-                    timeout_ms=timeout_ms,
-                )
-            else:  # jobbnorge
-                jobs = await scraper(
-                    query=query,
-                    location=location,
-                    max_pages=max_pages,
-                    headless=headless,
-                    timeout_ms=timeout_ms,
-                )
+                jobs = scraper(query=query, location=loc_code, max_pages=max_pages)
+            else:
+                jobs = scraper(query=query, location=location, max_pages=max_pages)
 
-            # Deduplicate across sites
             for job in jobs:
                 if job["url"] not in seen_urls:
                     seen_urls.add(job["url"])
@@ -969,12 +645,8 @@ async def scrape_all(
                 f"Got {len(jobs)} jobs from {site} ({len(all_jobs)} unique total)",
                 file=sys.stderr,
             )
-
         except Exception as e:
-            print(
-                f"Error scraping {site}: {e}",
-                file=sys.stderr,
-            )
+            print(f"Error scraping {site}: {e}", file=sys.stderr)
             continue
 
     return all_jobs
@@ -1017,7 +689,7 @@ def format_as_seen_json(jobs: list[dict], query: str, location: str) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Scrape job listings from Norwegian job portals using Playwright"
+        description="Scrape job listings from Norwegian job portals using curl"
     )
     parser.add_argument(
         "--query",
@@ -1030,16 +702,16 @@ def main():
         "--location",
         "-l",
         type=str,
-        default="oslo",
-        help="Location (city name). Default: oslo",
+        default="",
+        help="Location (city name). Default: all of Norway",
     )
     parser.add_argument(
         "--site",
         "-s",
         type=str,
         default="all",
-        choices=["finn", "nav", "arbeidsplassen", "jobbnorge", "linkedin", "all"],
-        help="Job site to scrape. 'all' scrapes finn.no, arbeidsplassen.no, jobbnorge.no, and linkedin.com. Default: all",
+        choices=["finn", "nav", "arbeidsplassen", "jobbnorge", "all"],
+        help="Job site to scrape. 'all' scrapes finn.no, arbeidsplassen.no, jobbnorge.no. Default: all",
     )
     parser.add_argument(
         "--pages",
@@ -1060,11 +732,6 @@ def main():
         action="store_true",
         help="Fetch recent jobs without a query filter.",
     )
-    parser.add_argument(
-        "--visible",
-        action="store_true",
-        help="Run with visible browser (not headless) for debugging.",
-    )
 
     args = parser.parse_args()
 
@@ -1072,45 +739,31 @@ def main():
     if args.dump_all:
         query = None
 
-    # Resolve sites to scrape
     if args.site == "all":
-        sites = ["finn", "nav", "jobbnorge", "linkedin"]
+        sites = ["finn", "nav", "jobbnorge"]
     else:
         sites = [args.site]
 
-    try:
-        jobs = asyncio.run(
-            scrape_all(
-                query=query,
-                location=args.location,
-                max_pages=args.pages,
-                sites=sites,
-                headless=not args.visible,
-            )
-        )
-    except KeyboardInterrupt:
-        print("\nInterrupted.", file=sys.stderr)
-        sys.exit(1)
+    jobs = scrape_all(
+        query=query, location=args.location, max_pages=args.pages, sites=sites
+    )
 
-    # Format as seen_jobs JSON
-    output = format_as_seen_json(jobs, query or "all", args.location)
-
-    # Also include a flat list for easy consumption by the Gemini agent
-    output["jobs_list"] = [
-        {
-            "title": j["title"],
-            "company": j["company"],
-            "location": j.get("location", ""),
-            "date": j.get("date", ""),
-            "url": j["url"],
-            "source": j.get("source", "unknown"),
-            "description_snippet": j.get("description_snippet", ""),
-        }
-        for j in jobs
-    ]
+    output = {
+        "jobs_list": [
+            {
+                "title": j["title"],
+                "company": j["company"],
+                "location": j.get("location", ""),
+                "date": j.get("date", ""),
+                "url": j["url"],
+                "source": j.get("source", "unknown"),
+                "description_snippet": j.get("description_snippet", ""),
+            }
+            for j in jobs
+        ]
+    }
 
     output_str = json.dumps(output, indent=2, ensure_ascii=False)
-
     if args.output:
         os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
         with open(args.output, "w", encoding="utf-8") as f:

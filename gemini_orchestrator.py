@@ -20,6 +20,7 @@ import os
 import re
 import sys
 import json
+import shlex
 import glob as glob_module
 import subprocess
 from typing import Optional
@@ -139,7 +140,7 @@ def glob_search(pattern: str) -> str:
 
 def grep_search(pattern: str, file_pattern: str = "*") -> str:
     """Search for a pattern in files matching a glob. Uses grep command."""
-    cmd = f"grep -rn '{pattern}' --include='{file_pattern}' . 2>/dev/null | head -100"
+    cmd = f"grep -rn {shlex.quote(pattern)} --include={shlex.quote(file_pattern)} . 2>/dev/null | head -100"
     try:
         result = subprocess.run(
             cmd, shell=True, capture_output=True, text=True, timeout=30
@@ -470,11 +471,12 @@ After user approves, write both draft files to disk:
     job_arg = args.strip()
 
     chat_eval, _ = create_gemini_session(system_prompt_eval, tools_apply)
+    # ponytail: skill files 01 (candidate) and 04 (evaluation) are already in the system prompt,
+    # no need for Gemini to re-read them via tool use. Only instruct it to read files not in context.
     eval_response = chat_eval.send_message(
         f"Evaluate this job posting and draft the application:\n\n{job_arg}\n\n"
         f"First, check if this is a URL (fetch it) or pasted text. "
-        f"Read the skill files: 01-candidate-profile.md, 04-job-evaluation.md, "
-        f"03-writing-style.md, 05-cv-templates.md, 06-cover-letter-templates.md. "
+        f"Read the skill files: 03-writing-style.md, 05-cv-templates.md, 06-cover-letter-templates.md. "
         f"Then present the fit evaluation."
     )
     return eval_response.text
@@ -519,7 +521,9 @@ Use execute_shell_command to run. Supported sites: finn.no, arbeidsplassen.nav.n
 The --site flag accepts: finn, nav, arbeidsplassen, jobbnorge, all (default: all)
 
 This will return JSON with job listings including: title, company, location, date, url, source.
-The scraper uses Playwright (headless Chromium) to render JavaScript-heavy pages.
+The scraper uses curl for all sites (no Playwright dependency). LinkedIn is excluded from
+scraping because it blocks unauthenticated search; individual LinkedIn job detail pages
+still work via /apply's web_fetch function.
 
 ### Deduplication files:
 - `job_scraper/seen_jobs.json` — All previously seen jobs (keyed by URL)

@@ -40,6 +40,15 @@ Install a LaTeX distribution to compile the generated `.tex` files to PDF:
 
 The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors). The cover letter compiles with `xelatex` because `cover.cls` requires `fontspec` for its custom Lato/Raleway fonts.
 
+### Playwright (no longer needed)
+
+The scraper previously used Playwright + headless Chromium (~300MB). It has been replaced with curl (stdlib).
+If you already have Playwright installed, you can remove it:
+
+```bash
+pip uninstall playwright && npx playwright uninstall
+```
+
 ## 2. Fork and clone
 
 ```bash
