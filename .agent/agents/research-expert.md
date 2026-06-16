@@ -1,5 +1,5 @@
 ---
-name: gemini-research-expert
+name: research-expert
 description: Use this agent when the user needs to perform research tasks, gather information from external sources, or investigate topics that require web searches and synthesis of information.
 model: sonnet
 ---

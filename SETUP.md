@@ -1,6 +1,6 @@
 # Setup Guide
 
-Step-by-step instructions for getting the AI Job Search framework running with Google Gemini.
+Step-by-step instructions for getting the AI Job Search framework running with DeepSeek.
 
 ## 1. Prerequisites
 
@@ -12,12 +12,12 @@ Python 3.10+ is required. Check with:
 python --version
 ```
 
-### Google Gemini API key
+### DeepSeek API key
 
-You'll need a Google Gemini API key. Get one from [Google AI Studio](https://aistudio.google.com/). Then set it as an environment variable:
+You'll need a DeepSeek API key. Get one from [DeepSeek Platform](https://platform.deepseek.com/). Then set it as an environment variable:
 
 ```bash
-export GEMINI_API_KEY='your_api_key_here'
+export DEEPSEEK_API_KEY='your_api_key_here'
 ```
 
 Add this to your `~/.bashrc` or `~/.zshrc` to make it permanent.
@@ -27,7 +27,7 @@ Add this to your `~/.bashrc` or `~/.zshrc` to make it permanent.
 Install the required Python packages:
 
 ```bash
-pip install google-genai pypdf
+pip install openai pypdf
 ```
 
 ### LaTeX (for compiling CVs and cover letters)
@@ -58,12 +58,12 @@ cd ai-job-search
 
 Or manually: fork on GitHub, then clone your fork.
 
-## 3. Run the Gemini agent
+## 3. Run the agent
 
 Start the agent:
 
 ```bash
-python gemini_orchestrator.py
+python main.py
 ```
 
 You'll see a prompt where you can type slash commands. Start with the setup command:
@@ -85,14 +85,14 @@ All paths produce the same result: fully populated profile files.
 | File | Content |
 |------|---------|
 | `CANDIDATE.md` | Your full candidate profile |
-| `.gemini/skills/job-application-assistant/01-candidate-profile.md` | Structured education, experience, skills |
-| `.gemini/skills/job-application-assistant/02-behavioral-profile.md` | Behavioral assessment |
-| `.gemini/skills/job-application-assistant/03-writing-style.md` | Writing style guide |
-| `.gemini/skills/job-application-assistant/04-job-evaluation.md` | Personalized skill match areas and career goals |
-| `.gemini/skills/job-application-assistant/05-cv-templates.md` | Profile statement templates for your background |
-| `.gemini/skills/job-application-assistant/06-cover-letter-templates.md` | Cover letter templates |
-| `.gemini/skills/job-application-assistant/07-interview-prep.md` | STAR examples from your experience |
-| `.gemini/skills/job-scraper/search-queries.md` | Job search queries for `/scrape` |
+| `.agent/skills/job-application-assistant/01-candidate-profile.md` | Structured education, experience, skills |
+| `.agent/skills/job-application-assistant/02-behavioral-profile.md` | Behavioral assessment |
+| `.agent/skills/job-application-assistant/03-writing-style.md` | Writing style guide |
+| `.agent/skills/job-application-assistant/04-job-evaluation.md` | Personalized skill match areas and career goals |
+| `.agent/skills/job-application-assistant/05-cv-templates.md` | Profile statement templates for your background |
+| `.agent/skills/job-application-assistant/06-cover-letter-templates.md` | Cover letter templates |
+| `.agent/skills/job-application-assistant/07-interview-prep.md` | STAR examples from your experience |
+| `.agent/skills/job-scraper/search-queries.md` | Job search queries for `/scrape` |
 | `cv/main_example.tex` | Your LaTeX CV with actual details |
 
 ### Re-running setup
@@ -166,11 +166,11 @@ cd cover_letters && xelatex cover_<company>_<role>.tex && cd ..
 
 ## Troubleshooting
 
-### "GEMINI_API_KEY not set"
+### "DEEPSEEK_API_KEY not set"
 Make sure the environment variable is set:
 
 ```bash
-export GEMINI_API_KEY='your_api_key_here'
+export DEEPSEEK_API_KEY='your_api_key_here'
 ```
 
 ### "salary_data.json not found"

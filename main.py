@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Gemini Job Search Agent
-=======================
-A full-featured job application assistant powered by Google Gemini,
+DeepSeek Job Search Agent
+=========================
+A full-featured job application assistant powered by DeepSeek (OpenAI-compatible API),
 implementing all slash commands from the original Claude Code workflow.
 
 Commands:
@@ -21,11 +21,11 @@ import re
 import sys
 import json
 import shlex
+import inspect
 import glob as glob_module
 import subprocess
 from typing import Optional
-from google import genai
-from google.genai import types
+from openai import OpenAI
 
 # Try importing pypdf for PDF reading
 try:
@@ -40,11 +40,12 @@ except ImportError:
 # ---------------------------------------------------------------------------
 
 REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
-SKILL_DIR = os.path.join(REPO_ROOT, ".gemini", "skills", "job-application-assistant")
-COMMANDS_DIR = os.path.join(REPO_ROOT, ".gemini", "commands")
-SCRAPER_DIR = os.path.join(REPO_ROOT, ".gemini", "skills", "job-scraper")
-UPSKILL_DIR = os.path.join(REPO_ROOT, ".gemini", "skills", "upskill")
-GEMINI_MODEL = "gemini-2.5-flash-lite"
+SKILL_DIR = os.path.join(REPO_ROOT, ".agent", "skills", "job-application-assistant")
+COMMANDS_DIR = os.path.join(REPO_ROOT, ".agent", "commands")
+SCRAPER_DIR = os.path.join(REPO_ROOT, ".agent", "skills", "job-scraper")
+UPSKILL_DIR = os.path.join(REPO_ROOT, ".agent", "skills", "upskill")
+# ponytail: DeepSeek API is OpenAI-compatible — swap SDK, endpoint, model, done.
+DEEPSEEK_MODEL = "deepseek-chat"
 
 # ---------------------------------------------------------------------------
 # 1. Local Tool Definitions
@@ -176,7 +177,7 @@ def web_fetch(url: str) -> str:
                 "--max-time",
                 "30",
                 "-A",
-                "Mozilla/5.0 (compatible; GeminiJobSearch/1.0)",
+                "Mozilla/5.0 (compatible; AgentJobSearch/1.0)",
                 url,
             ],
             capture_output=True,
@@ -223,25 +224,115 @@ def web_fetch(url: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# 2. Gemini Session Helpers
+# 2. OpenAI-Compatible Chat Session (DeepSeek)
 # ---------------------------------------------------------------------------
 
+# Registry: function_name -> callable (populated by _register_tools)
+_TOOL_FUNCTIONS = {}
 
-def create_gemini_session(system_prompt: str, tools_list: list = None):
-    """Creates a Gemini chat session with the given system prompt and tools."""
-    client = genai.Client()
-    config_kwargs = {
-        "system_instruction": system_prompt,
-        "temperature": 0.2,
+
+def _make_tool_schema(func) -> dict:
+    """Auto-generate OpenAI tool schema from a Python function's signature and docstring."""
+    sig = inspect.signature(func)
+    properties = {}
+    required = []
+    for name, param in sig.parameters.items():
+        prop = {"type": "string"}  # ponytail: all our tools use str params
+        if param.default is inspect.Parameter.empty:
+            required.append(name)
+        else:
+            prop["description"] = f"Default: {param.default}"
+        properties[name] = prop
+
+    doc_first_line = (func.__doc__ or "").strip().split("\n")[0]
+    return {
+        "type": "function",
+        "function": {
+            "name": func.__name__,
+            "description": doc_first_line,
+            "parameters": {
+                "type": "object",
+                "properties": properties,
+                "required": required,
+            },
+        },
     }
-    if tools_list:
-        config_kwargs["tools"] = tools_list
 
-    chat = client.chats.create(
-        model=GEMINI_MODEL,
-        config=types.GenerateContentConfig(**config_kwargs),
-    )
-    return chat, client
+
+def _register_tools(*funcs) -> list:
+    """Register tool functions and return their OpenAI-compatible schema list."""
+    schemas = []
+    for f in funcs:
+        _TOOL_FUNCTIONS[f.__name__] = f
+        schemas.append(_make_tool_schema(f))
+    return schemas
+
+
+class ChatSession:
+    """OpenAI-compatible chat session with automatic tool-call loop."""
+
+    def __init__(self, system_prompt: str, model: str, tools: list = None):
+        self.client = OpenAI(
+            api_key=os.environ.get("DEEPSEEK_API_KEY"),
+            base_url="https://api.deepseek.com",
+        )
+        self.model = model
+        self.messages = [{"role": "system", "content": system_prompt}]
+        self.tool_schemas = tools or []
+        self.tool_map = {
+            s["function"]["name"]: _TOOL_FUNCTIONS[s["function"]["name"]]
+            for s in self.tool_schemas
+        }
+
+    def send_message(self, user_text: str) -> str:
+        """Send a message and return the text response, executing tool calls as needed."""
+        self.messages.append({"role": "user", "content": user_text})
+
+        while True:
+            kwargs = {"model": self.model, "messages": self.messages}
+            if self.tool_schemas:
+                kwargs["tools"] = self.tool_schemas
+                kwargs["temperature"] = 0.2
+
+            response = self.client.chat.completions.create(**kwargs)
+            choice = response.choices[0]
+
+            # Stop — return the final text
+            if choice.finish_reason == "stop":
+                self.messages.append(choice.message.model_dump(exclude_none=True))
+                return choice.message.content or ""
+
+            # Tool calls — execute them and loop
+            if choice.finish_reason == "tool_calls":
+                self.messages.append(choice.message.model_dump(exclude_none=True))
+                for tc in choice.message.tool_calls:
+                    fn_name = tc.function.name
+                    try:
+                        args = json.loads(tc.function.arguments)
+                    except json.JSONDecodeError:
+                        args = {}
+                    fn = self.tool_map.get(fn_name)
+                    if fn:
+                        result = fn(**args)
+                    else:
+                        result = f"Error: unknown tool '{fn_name}'"
+                    self.messages.append(
+                        {
+                            "role": "tool",
+                            "tool_call_id": tc.id,
+                            "content": str(result),
+                        }
+                    )
+                continue
+
+            # Unknown finish_reason — return whatever text we got
+            return choice.message.content or ""
+
+
+def create_chat_session(system_prompt: str, tools_list: list = None) -> ChatSession:
+    """Creates a ChatSession with the given system prompt and tool functions."""
+    tool_schemas = _register_tools(*tools_list) if tools_list else []
+    return ChatSession(system_prompt, DEEPSEEK_MODEL, tool_schemas)
 
 
 # ---------------------------------------------------------------------------
@@ -372,9 +463,9 @@ Ask the user which path they'd like:
 Wait for their choice before proceeding.
 """
 
-    chat, _ = create_gemini_session(system_prompt, tools_setup)
-    response = chat.send_message(user_prompt)
-    print(f"\n[Setup] > {response.text}\n", flush=True)
+    session = create_chat_session(system_prompt, tools_setup)
+    response = session.send_message(user_prompt)
+    print(f"\n[Setup] > {response}\n", flush=True)
 
     print(
         "--- Setup interactive session started ---\n"
@@ -405,8 +496,8 @@ Wait for their choice before proceeding.
                 continue
 
             print("Thinking...", flush=True)
-            response = chat.send_message(user_input)
-            print(f"\n[Setup] > {response.text}\n", flush=True)
+            response = session.send_message(user_input)
+            print(f"\n[Setup] > {response}\n", flush=True)
 
         except KeyboardInterrupt:
             print("\n[Setup] Interrupted. Returning to main session.", flush=True)
@@ -421,7 +512,7 @@ Wait for their choice before proceeding.
 def cmd_apply(args: str) -> str:
     """
     Full drafter-reviewer job application workflow.
-    Implemented as a multi-turn Gemini conversation with reviewer phase.
+    Implemented as a multi-turn agent conversation with reviewer phase.
     """
     if not args.strip():
         return "**Usage:** `/apply <job-posting-url>` or `/apply <paste full job posting text>`\n\nPlease provide a job posting URL or paste the full job description."
@@ -470,16 +561,15 @@ After user approves, write both draft files to disk:
 
     job_arg = args.strip()
 
-    chat_eval, _ = create_gemini_session(system_prompt_eval, tools_apply)
+    session = create_chat_session(system_prompt_eval, tools_apply)
     # ponytail: skill files 01 (candidate) and 04 (evaluation) are already in the system prompt,
-    # no need for Gemini to re-read them via tool use. Only instruct it to read files not in context.
-    eval_response = chat_eval.send_message(
+    # no need for the model to re-read them via tool use. Only instruct it to read files not in context.
+    return session.send_message(
         f"Evaluate this job posting and draft the application:\n\n{job_arg}\n\n"
         f"First, check if this is a URL (fetch it) or pasted text. "
         f"Read the skill files: 03-writing-style.md, 05-cv-templates.md, 06-cover-letter-templates.md. "
         f"Then present the fit evaluation."
     )
-    return eval_response.text
 
 
 def cmd_scrape(args: str) -> str:
@@ -556,15 +646,14 @@ IMPORTANT: Only present jobs found via actual scraper output. Never fabricate jo
     ]
 
     focus = args.strip() if args.strip() else "all categories"
-    chat, _ = create_gemini_session(system_prompt, tools_scrape)
-    response = chat.send_message(
+    session = create_chat_session(system_prompt, tools_scrape)
+    return session.send_message(
         f"Search for jobs with focus: {focus}. "
         f"First read seen_jobs.json and the tracker, then run the multi-site scraper using "
         f"execute_shell_command with --site all and the appropriate query and location. "
         f"Parse the results from all sites. Deduplicate, assess fit, update seen_jobs.json, "
         f"and present results grouped by source site."
     )
-    return response.text
 
 
 def cmd_expand(args: str) -> str:
@@ -615,13 +704,12 @@ IMPORTANT RULES:
         grep_search,
     ]
 
-    chat, _ = create_gemini_session(system_prompt, tools_expand)
-    response = chat.send_message(
+    session = create_chat_session(system_prompt, tools_expand)
+    return session.send_message(
         "Run the competency expansion workflow. "
         "First scan all document sources and online presence, "
         "then present findings for user approval."
     )
-    return response.text
 
 
 def cmd_upskill(args: str) -> str:
@@ -675,9 +763,8 @@ IMPORTANT: Never fabricate resources. Only cite resources found via web_fetch.
     else:
         prompt = "Run aggregate upskill analysis from job_search_tracker.csv"
 
-    chat, _ = create_gemini_session(system_prompt, tools_upskill)
-    response = chat.send_message(prompt)
-    return response.text
+    session = create_chat_session(system_prompt, tools_upskill)
+    return session.send_message(prompt)
 
 
 def cmd_reset(args: str) -> str:
@@ -773,7 +860,7 @@ def execute_reset(scope: str) -> str:
 ## References
 """
         write_workspace_file(
-            ".gemini/skills/job-application-assistant/01-candidate-profile.md",
+            ".agent/skills/job-application-assistant/01-candidate-profile.md",
             blank_candidate,
         )
         results.append("Cleared 01-candidate-profile.md")
@@ -797,7 +884,7 @@ def execute_reset(scope: str) -> str:
 ## Using This in Applications
 """
         write_workspace_file(
-            ".gemini/skills/job-application-assistant/02-behavioral-profile.md",
+            ".agent/skills/job-application-assistant/02-behavioral-profile.md",
             blank_behavioral,
         )
         results.append("Cleared 02-behavioral-profile.md")
@@ -934,16 +1021,15 @@ Keep your responses structured, professional, and clear.
 
 
 def main():
-    print("[Gemini Job Search Agent]", flush=True)
+    print("[DeepSeek Job Search Agent]", flush=True)
     print("=" * 56, flush=True)
 
-    api_key = os.environ.get("GEMINI_API_KEY")
+    api_key = os.environ.get("DEEPSEEK_API_KEY")
     if not api_key:
-        print("Error: GEMINI_API_KEY environment variable is not set.", flush=True)
-        print("       export GEMINI_API_KEY='your_key'", flush=True)
+        print("Error: DEEPSEEK_API_KEY environment variable is not set.", flush=True)
+        print("       export DEEPSEEK_API_KEY='your_key'", flush=True)
         sys.exit(1)
 
-    client = genai.Client()
     system_prompt = load_system_prompt()
 
     main_tools = [
@@ -958,14 +1044,7 @@ def main():
     ]
 
     try:
-        chat = client.chats.create(
-            model=GEMINI_MODEL,
-            config=types.GenerateContentConfig(
-                system_instruction=system_prompt,
-                tools=main_tools,
-                temperature=0.2,
-            ),
-        )
+        session = create_chat_session(system_prompt, main_tools)
     except Exception as e:
         print(f"Error establishing session: {e}", flush=True)
         sys.exit(1)
@@ -1014,10 +1093,10 @@ def main():
                         pending_reset_scope = args
                 continue
 
-            # Regular conversation - send to Gemini
+            # Regular conversation - send to DeepSeek
             print("Thinking...", flush=True)
-            response = chat.send_message(user_input)
-            print(f"\nAgent > {response.text}\n", flush=True)
+            response = session.send_message(user_input)
+            print(f"\nAgent > {response}\n", flush=True)
 
         except KeyboardInterrupt:
             print("\nExiting agent session.", flush=True)

@@ -79,7 +79,7 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)
 - `cover_letters/` - LaTeX cover letters (custom cover.cls template)
-- `.gemini/skills/` - AI skill definitions for the application workflow
+- `.agent/skills/` - AI skill definitions for the application workflow
 - `.agents/skills/` - Job search CLI tools
 
 ## Workflow for New Job Applications

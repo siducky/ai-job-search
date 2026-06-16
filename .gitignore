@@ -75,3 +75,4 @@ authorized_user.json
 
 # Google Sheets last-used sheet ID (machine-local)
 .last_sheet_id
+gcloud_client_secret.json

@@ -4,11 +4,11 @@
 
 # AI Job Search
 
-An AI-powered job application framework powered by Google Gemini. Fork it, fill in your profile, and let Gemini evaluate job postings, tailor your CV, write cover letters, and prepare you for interviews.
+An AI-powered job application framework powered by DeepSeek. Fork it, fill in your profile, and let the agent evaluate job postings, tailor your CV, write cover letters, and prepare you for interviews.
 
 ## What this is
 
-A structured workflow that turns Google Gemini into a full-stack job application assistant. The core workflow (self-profiling, fit evaluation, and the drafter-reviewer application pipeline) is **language- and country-agnostic**. The job portal search skills are built for the Norwegian market (finn.no, jobbnorge.no, nav.arbeidplassen.no).
+A structured workflow that turns DeepSeek into a full-stack job application assistant. The core workflow (self-profiling, fit evaluation, and the drafter-reviewer application pipeline) is **language- and country-agnostic**. The job portal search skills are built for the Norwegian market (finn.no, jobbnorge.no, nav.arbeidplassen.no).
 
 ```
 /setup          /scrape              /apply <url>
@@ -31,7 +31,7 @@ The framework encodes career guidance best practices, including structured evalu
 ## Prerequisites
 
 - Python 3.10+
-- Google Gemini API key ([get one here](https://aistudio.google.com/))
+- DeepSeek API key ([get one here](https://aistudio.google.com/))
 - `pip install google-genai pypdf`
 - LaTeX distribution with `lualatex` and `xelatex`: [TeX Live](https://tug.org/texlive/) or [MiKTeX](https://miktex.org/). The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors); the cover letter compiles with `xelatex` because `cover.cls` requires `fontspec`.
 
@@ -47,13 +47,13 @@ cd ai-job-search
 ### 2. Set your API key
 
 ```bash
-export GEMINI_API_KEY='your_api_key_here'
+export DEEPSEEK_API_KEY='your_api_key_here'
 ```
 
 ### 3. Start the agent
 
 ```bash
-python gemini_orchestrator.py
+python main.py
 ```
 
 ### 4. Set up your profile
@@ -102,8 +102,8 @@ This runs the full workflow: evaluate fit, draft CV + cover letter, review with 
 ```
 ai-job-search/
 ├── CANDIDATE.md                          # Main candidate profile + workflow rules
-├── gemini_orchestrator.py             # Gemini-powered agent (run this)
-├── .gemini/
+├── main.py                          # DeepSeek-powered agent (run this)
+├── .agent/
 │   ├── commands/
 │   │   ├── apply.md                   # /apply workflow (drafter-reviewer)
 │   │   ├── setup.md                   # /setup onboarding (documents folder, CV import, or interview)
@@ -154,7 +154,7 @@ The `/apply` command runs a **drafter-reviewer workflow** with mandatory PDF com
 3. **Draft** a tailored CV and cover letter in LaTeX
 4. **Spawn a reviewer agent** that researches the company and critiques the drafts
 5. **Revise** based on the reviewer's feedback
-6. **Compile and inspect** both PDFs: lualatex for the CV, xelatex for the cover letter. Gemini reads the rendered pages and iterates on the LaTeX until the CV is exactly 2 pages with no orphaned entry titles, and the cover letter is exactly 1 page with the signature visible and fonts consistent.
+6. **Compile and inspect** both PDFs: lualatex for the CV, xelatex for the cover letter. DeepSeek reads the rendered pages and iterates on the LaTeX until the CV is exactly 2 pages with no orphaned entry titles, and the cover letter is exactly 1 page with the signature visible and fonts consistent.
 7. **Present** the final output with a verification checklist
 
 All claims in the CV and cover letter are verified against your actual profile. The system never fabricates skills or experience.
@@ -163,7 +163,7 @@ All claims in the CV and cover letter are verified against your actual profile. 
 
 - **PDF verification loop.** Most LaTeX-resume templates produce "looks fine in the .tex" output that breaks in the PDF: job titles orphan to the next page, cover letters spill onto page 2, bullet fonts silently fall back to the body font. The `/apply` command compiles and visually inspects every PDF and applies targeted fixes (`\needspace`, `\enlargethispage`, font-matching wrappers for list items) until the layout is clean. This runs automatically on every application.
 - **Relevance-weighted CV cutting.** When a CV overflows 2 pages, the workflow does not cut mechanically from the "oldest" section. It scores each candidate line by (a) relevance to the target posting, (b) uniqueness in the document, and (c) whether the cover letter depends on it, and cuts the lowest-total-score line first. An older-role bullet that hits posting keywords survives ahead of a recent-role bullet that does not.
-- **Drafter-reviewer separation.** The drafter writes; a second Gemini agent, spawned with a fresh context, researches the company and critiques the drafts. The drafter then revises. This catches missed keywords, weak framing, and generic language that a single pass often leaves in.
+- **Drafter-reviewer separation.** The drafter writes; a second DeepSeek agent, spawned with a fresh context, researches the company and critiques the drafts. The drafter then revises. This catches missed keywords, weak framing, and generic language that a single pass often leaves in.
 - **Token-efficient reviewer dispatch.** The reviewer agent receives drafts inline rather than re-reading them, and the verification checklist runs once at the end of the workflow rather than being duplicated by both agents. Note: the compile-and-inspect step in Step 6 spends some of those savings on PDF rendering and layout iteration — the workflow trades some end-to-end token cost for a real reduction in broken PDFs reaching the user.
 
 ## Customization
@@ -238,7 +238,7 @@ To get the most from this, invest time during `/setup` in describing not just yo
 ## Acknowledgements
 
 - [Mikkel Krogholm](https://github.com/mikkelkrogsholm) ([skills repo](https://github.com/mikkelkrogsholm/skills)) for the job search CLI skills
-- Built with [Google Gemini](https://deepmind.google/technologies/gemini/) and [Claude Code](https://claude.com/claude-code) by [Anthropic](https://anthropic.com)
+- Built with [DeepSeek](https://deepseek.com/) and [Claude Code](https://claude.com/claude-code) by [Anthropic](https://anthropic.com)
 
 ## License
 

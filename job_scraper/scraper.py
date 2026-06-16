@@ -51,7 +51,7 @@ FINN_LOCATION_CODES = {
     "agder": "1.20001.22042",
 }
 
-USER_AGENT = "Mozilla/5.0 (compatible; GeminiJobSearch/1.0)"
+USER_AGENT = "Mozilla/5.0 (compatible; AgentJobSearch/1.0)"
 
 
 def resolve_finn_location(location_str: str) -> str:
