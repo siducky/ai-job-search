@@ -31,8 +31,8 @@ The framework encodes career guidance best practices, including structured evalu
 ## Prerequisites
 
 - Python 3.10+
-- DeepSeek API key ([get one here](https://aistudio.google.com/))
-- `pip install google-genai pypdf`
+- DeepSeek API key ([get one here](https://platform.deepseek.com/))
+- `pip install -r requirements.txt`
 - LaTeX distribution with `lualatex` and `xelatex`: [TeX Live](https://tug.org/texlive/) or [MiKTeX](https://miktex.org/). The CV compiles with `lualatex` (pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors); the cover letter compiles with `xelatex` because `cover.cls` requires `fontspec`.
 
 ## Quick start
@@ -47,7 +47,8 @@ cd ai-job-search
 ### 2. Set your API key
 
 ```bash
-export DEEPSEEK_API_KEY='your_api_key_here'
+cp .env.example .env
+# Edit .env and paste your DeepSeek API key
 ```
 
 ### 3. Start the agent

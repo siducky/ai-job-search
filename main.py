@@ -26,6 +26,9 @@ import glob as glob_module
 import subprocess
 from typing import Optional
 from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Try importing pypdf for PDF reading
 try:
@@ -1026,8 +1029,8 @@ def main():
 
     api_key = os.environ.get("DEEPSEEK_API_KEY")
     if not api_key:
-        print("Error: DEEPSEEK_API_KEY environment variable is not set.", flush=True)
-        print("       export DEEPSEEK_API_KEY='your_key'", flush=True)
+        print("Error: DEEPSEEK_API_KEY not found. Create a .env file:", flush=True)
+        print("       cp .env.example .env", flush=True)
         sys.exit(1)
 
     system_prompt = load_system_prompt()

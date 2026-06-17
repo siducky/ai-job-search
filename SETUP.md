@@ -14,20 +14,21 @@ python --version
 
 ### DeepSeek API key
 
-You'll need a DeepSeek API key. Get one from [DeepSeek Platform](https://platform.deepseek.com/). Then set it as an environment variable:
+You'll need a DeepSeek API key. Get one from [DeepSeek Platform](https://platform.deepseek.com/). Then store it in a `.env` file:
 
 ```bash
-export DEEPSEEK_API_KEY='your_api_key_here'
+cp .env.example .env
+# Edit .env and paste your key
 ```
 
-Add this to your `~/.bashrc` or `~/.zshrc` to make it permanent.
+The app loads it automatically via `python-dotenv` on startup.
 
 ### pip dependencies
 
 Install the required Python packages:
 
 ```bash
-pip install openai pypdf
+pip install -r requirements.txt
 ```
 
 ### LaTeX (for compiling CVs and cover letters)
@@ -167,10 +168,11 @@ cd cover_letters && xelatex cover_<company>_<role>.tex && cd ..
 ## Troubleshooting
 
 ### "DEEPSEEK_API_KEY not set"
-Make sure the environment variable is set:
+Make sure your `.env` file exists and contains your key:
 
 ```bash
-export DEEPSEEK_API_KEY='your_api_key_here'
+cp .env.example .env
+# Edit .env and paste your key
 ```
 
 ### "salary_data.json not found"
