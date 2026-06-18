@@ -1,80 +1,123 @@
-# Search Queries for Job Scraper
+# Job Search Queries for Siddhant Gupta
 
-<!-- SETUP: Customize these queries based on your skills, target roles, and location -->
+## Primary Role Targets
 
-## Search Sites
-
-Primary (Norwegian job market):
-- **finn.no** - Norway's largest online marketplace (jobs section)
-- **jobbnorge.no** - major Norwegian job board
-- **nav.arbeidplassen.no** - official Norwegian welfare and labour office job portal
-
-Secondary (company career pages via Google):
-- Direct Google searches with `site:` filters for known target companies
-- **linkedin.com/jobs** - LinkedIn job listings (filter: Norway / your city)
-
-## Query Categories
-
-Queries are grouped by priority. Each query should be combined with your location terms (e.g. "Oslo", "Bergen", "Trondheim", "Stavanger") where the site supports it.
-
-### Priority 1: [YOUR_PRIMARY_ROLE_TYPE]
-
-These match your strongest and most desired career direction.
-
+### Energy Analyst / Energy Data Analyst
 ```
-site:finn.no "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
-site:finn.no "[YOUR_KEY_SKILL]" [YOUR_CITY]
-site:jobbnorge.no "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
-site:arbeidplassen.nav.no "[YOUR_PRIMARY_JOB_TITLE]" [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE]" Norway
+energy analyst oslo
+energianalytiker oslo
+energy data analyst oslo
+kraftanalytiker oslo
+fornybar analyst oslo
+renewable energy analyst oslo
+energisystem analyst oslo
+energy modelling oslo
+energimodellering oslo
+power market analyst oslo
 ```
 
-### Priority 2: [YOUR_DOMAIN_EXPERTISE]
-
-These match your domain expertise.
-
+### ESG / Climate / Sustainability Analyst
 ```
-site:finn.no [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY]
-site:finn.no [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
-site:jobbnorge.no [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY]
-site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] Norway
-```
-
-### Priority 3: [YOUR_ADJACENT_ROLE_TYPE]
-
-Adjacent roles you could pivot into.
-
-```
-site:finn.no "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:finn.no "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:jobbnorge.no "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
+esg analyst oslo
+climate analyst oslo
+sustainability analyst oslo
+carbon accounting oslo
+ghg analyst oslo
+esg data analyst oslo
+climate data analyst oslo
+bærekraft analyst oslo
+miljørådgiver oslo
+klimarådgiver oslo
 ```
 
-### Priority 4: Broader Technical / Consulting
-
-Wider net for general technical roles.
-
+### Sustainability / Energy Consultant
 ```
-site:finn.no [YOUR_KEY_SKILL] [YOUR_CITY]
-site:jobbnorge.no [YOUR_KEY_SKILL] [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_KEY_SKILL]" Norway
-site:arbeidplassen.nav.no [YOUR_KEY_SKILL] [YOUR_CITY]
+sustainability consultant oslo
+energy consultant oslo
+miljørådgiver energi oslo
+klimarådgiver oslo
+bærekraft konsulent oslo
 ```
 
-## Location Filter
+### Research Institutes & Think Tanks
+```
+cicero oslo stilling
+norce stilling
+ife stilling
+energiforskning stilling
+forskningsinstitutt energi oslo
+research analyst energy oslo
+```
 
-When evaluating results, verify the job location is within reasonable commute distance from your home. Define acceptable areas:
-- [YOUR_CITY] and surrounding areas
-- [ACCEPTABLE_AREA_1]
-- [ACCEPTABLE_AREA_2]
-- [BORDERLINE_AREA] (borderline - ~X min by transit)
-- [TOO_FAR_AREA] (too far)
+### Data Analyst (Environment/Energy Focus)
+```
+data analyst environment oslo
+data analyst energy oslo
+data analyst sustainability oslo
+miljødata analyst oslo
+energidata analyst oslo
+```
 
-## Date Filter
+## Secondary Role Targets
 
-Only include jobs posted within the last 14 days, or with an application deadline that has not yet passed. If a posting date cannot be determined, include it but flag as "date unknown".
+### Market / Commodity Analyst (Energy)
+```
+market analyst energy oslo
+commodity analyst oslo
+råvareanalytiker oslo
+markedsanalytiker energi oslo
+kraftmarkedsanalytiker oslo
+power market analyst oslo
+```
 
-## Adapting Queries
+### Business Intelligence / General Analyst
+```
+business intelligence analyst oslo
+power bi analyst oslo
+data analyst oslo
+analytiker oslo
+```
 
-If the user specifies a focus area, select queries from the matching category and also generate 2-3 custom queries for that focus. For example:
-- "/scrape [focus_area]" -> relevant category queries + custom focus-specific queries
+## Broader Search (Norway-wide, Remote)
+```
+energy analyst norway
+esg analyst norway
+climate analyst norway
+data analyst sustainability norway
+energy consultant norway
+sustainability consultant norway
+cicero stilling
+norce stilling
+ife stilling
+```
+
+## Dream Organizations to Watch
+- IEA (International Energy Agency) - Paris/remote
+- ITF (International Transport Forum)
+- CICERO (Center for International Climate Research) - Oslo
+- NORCE (Norwegian Research Centre) - Bergen/Oslo
+- IFE (Institute for Energy Technology) - Kjeller/Oslo
+- NVE (Norwegian Water Resources and Energy Directorate)
+- ENOVA
+- DNV
+- Multiconsult
+- Sweco (energy/sustainability division)
+- Rystad Energy
+- Menon Economics
+
+## Job Portals
+- finn.no (primary)
+- jobbnorge.no (academic/public sector)
+- nav.arbeidplassen.no
+- LinkedIn (Norwegian jobs)
+- cicero.oslo.no (careers page)
+- norceresearch.no (careers page)
+- ife.no (careers page)
+- iea.org/careers
+
+## Exclusions
+- Sales roles
+- Full-time on-site only (unless Oslo-based and interesting)
+- Senior management / director-level roles
+- Software engineering / developer roles (unless data/analytics heavy)
+- Early-stage startups without proven traction

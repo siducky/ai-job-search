@@ -1,8 +1,8 @@
-%% Example CV - [YOUR_NAME]
+%% Master CV - Siddhant Gupta
 %% Comprehensive overview of all competencies, experience, and achievements.
 %% Use as a master reference when tailoring role-specific CVs.
 %%
-%% SETUP: Run /setup to populate this with your actual information.
+%% SETUP: Populated by /setup
 %% Compile with: lualatex main_example.tex
 %% (pdflatex often fails on modern MiKTeX with fontawesome5 font-expansion errors.)
 
@@ -10,32 +10,15 @@
 \moderncvstyle{banking}
 \moderncvcolor{blue}
 
-% Force both first and last name AND section headings to render in moderncv
-% blue (color1). Default banking on lualatex+MiKTeX leaves these black, which
-% looks inconsistent with the rest of the blue accent scheme.
-\renewcommand*{\firstnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
-\renewcommand*{\lastnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
-\renewcommand*{\sectionstyle}[1]{{\sectionfont\color{color1}#1}}
-
-\usepackage[utf8]{inputenc}
-\usepackage{hyperref}
-\hypersetup{
-    colorlinks=true,
-    linkcolor=blue,
-    filecolor=magenta,
-    urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
-    pdfpagemode=FullScreen,
-}
 \usepackage[scale=0.80]{geometry}
-\usepackage{import}
+\usepackage{needspace} % Added to dynamically manage awkward page breaks
 
 % personal data
-\name{[First]}{[Last]}
-\address{[Your Address, City, Country]}{}{}
-\phone[mobile]{[+XX XXXXXXXXXX]}
-\email{[your.email@example.com]}
-\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
+\name{Siddhant}{Gupta}
+\address{Trondheimsveien 64, Oslo, Norway}{}{}
+\phone[mobile]{+47 92206297}
+\email{siddhantbenz@gmail.com}
+\social[linkedin]{siddhantgupta1996}
 
 \begin{document}
 
@@ -46,7 +29,7 @@
 % ============================================================
 
 \vspace{6pt}
-\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
+{\small Data analyst with 4+ years of experience in greenhouse gas accounting, ESG reporting, and environmental data analysis. Builds automated pipelines and ML models that turn complex datasets into decision-ready insights aligned with CSRD, GHG Protocol, and TCFD frameworks. Specialises in helping organisations measure, report, and reduce their climate footprint.}
 
 % ============================================================
 %     CORE COMPETENCIES
@@ -56,15 +39,15 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
+\item \textbf{Data Engineering \& Analysis}: Python (pandas, NumPy, scikit-learn), SQL, ETL pipeline development, data modelling, statistical analysis.
 
-\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
+\item \textbf{ML \& NLP}: Transformer-based NLP models for text classification, automated GHG Scope assignment, model deployment and integration.
 
-\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
+\item \textbf{ESG \& Carbon Accounting}: GHG Protocol (Scope 1, 2, 3), CSRD/ESRS, VSME, GRI, TCFD, ISO 14064, lifecycle assessment (LCA).
 
-\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
+\item \textbf{Visualisation \& BI}: PowerBI, Microsoft Excel, interactive dashboard development, technical documentation, stakeholder reporting.
 
-\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
+\item \textbf{Energy Systems Modelling}: Geospatial analysis (OpenStreetMap, GIS), optimisation modelling (GAMS), simulation modelling, renewable energy potential assessment.
 
 \end{itemize}
 
@@ -74,37 +57,37 @@
 
 \section{Professional Experience}
 \vspace{3pt}
-\begin{itemize}
 
 % --- Most Recent Role ---
-\item{\cventry{[YYYY--Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\cventry{05/2022--Present}{Climate Footprint Analyst}{Ducky AS}{Norway}{}{
 \begin{itemize}
-    \item [Achievement or responsibility 1 - be specific, use numbers where possible]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-    \item [Achievement or responsibility 4]
-\end{itemize}}}
+    \item Engineered ETL pipelines to integrate ERP system data with emission factor databases, building automated greenhouse gas (GHG) accounting aligned with VSME and ESRS frameworks
+    \item Developed NLP-based machine learning models to automatically assign GHG Protocol Scope and emission factors to financial transactions, improving the accuracy and speed of greenhouse gas calculations
+    \item Processed and analysed regional telecommunication data to model local commuting patterns, delivering actionable data insights to support sustainable urban mobility initiatives across 5+ municipalities
+    \item Developed a lifecycle assessment model (LCA) to compare the environmental impact of various equipment ownership scenarios (reuse, rental, and buying new), demonstrating a 25--30\% reduction in lifecycle greenhouse gas emissions to support circular business models
+    \item Authored technical and methodological documentation for 3 core products, translating complex data methodologies for technical and non-technical stakeholders
+\end{itemize}}
 
 \vspace{3pt}
 
 % --- Previous Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\cventry{02/2021--09/2021}{Research Assistant}{greenventory GmbH / Fraunhofer ISE}{Freiburg, Germany}{}{
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-\end{itemize}}}
+    \item Built a geospatial data model using Python and OpenStreetMap to identify optimal installation sites for heat pump integration
+    \item Programmed a simulation model using Python to estimate residential geothermal heating potential, providing quantitative data to support municipal heating transition strategies
+    \item Developed interactive PowerBI dashboards consolidating ESG and economic KPIs to help municipal planners make data-driven decisions
+\end{itemize}}
 
 \vspace{3pt}
 
 % --- Earlier Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+% Dynamically check if there is enough space left on page 1 for the whole entry
+\needspace{6\baselineskip}
+\cventry{01/2019--07/2019}{Energy Analyst Intern}{Centre for Science and Environment}{New Delhi, India}{}{
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-\end{itemize}}}
-
-\end{itemize}
+    \item Analysed operational and emissions datasets covering 70+ thermal power plants in India to identify environmental compliance trends
+    \item Translated quantitative findings into policy briefs and risk assessments, outlining recommendations for pollution control technology adoption in the energy sector
+\end{itemize}}
 
 % ============================================================
 %     EDUCATION
@@ -112,19 +95,15 @@
 
 \section{Education}
 \vspace{1pt}
-\begin{itemize}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-Thesis: ``[Thesis Title].'' [Brief description of research focus.]
-}}
+\cventry{2019--2021}{M.Sc. in Sustainable Energy Systems}{Chalmers University of Technology}{Gothenburg, Sweden}{}{
+Thesis: ``Estimating the technical shallow geothermal potential for heating: A case study of L\"{o}rrach, Germany.'' Developed a geospatial simulation model to assess residential geothermal heating potential.
+}
 
 \vspace{3pt}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-[Brief description or key topics.]
-}}
-
-\end{itemize}
+\cventry{2014--2018}{B.Tech. in Mechanical Engineering}{Manipal Institute of Technology}{Manipal, India}{}{
+}
 
 % ============================================================
 %     LANGUAGES
@@ -133,27 +112,19 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Languages}
 \vspace{1pt}
 \begin{itemize}
-\item [Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).
+\item English (Native/Bilingual), Hindi (Native/Bilingual), Norwegian (Limited Working), German (Limited Working), Swedish (Elementary).
 \end{itemize}
 
 % ============================================================
-%     PUBLICATIONS (optional)
+%     CERTIFICATIONS
 % ============================================================
 
-\section{Publications}
+\section{Certifications}
 \vspace{1pt}
 \begin{itemize}
-\item [Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}
-\end{itemize}
-
-% ============================================================
-%     HONORS AND AWARDS (optional)
-% ============================================================
-
-\section{Honors and Awards}
-\vspace{1pt}
-\begin{itemize}
-\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
+\item Sustainability Leadership Training (2019)
+\item Urban Mobility Concepts
+\item Basic Hydraulic Systems
 \end{itemize}
 
 % ============================================================
@@ -163,7 +134,9 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{References}
 \vspace{1pt}
 \begin{itemize}
-\item{Available upon request.}
+\item{Prof. Erik Ahlgren, Department of Space, Earth and Environment, Chalmers University of Technology}
+\item{Dr. Ramananda Bhatt, Professor, Manipal Institute of Technology}
+\item{Karen Dundas, Senior Software Developer, Ducky AS}
 \end{itemize}
 
 \end{document}

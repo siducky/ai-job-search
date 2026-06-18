@@ -1,10 +1,10 @@
-# Job Application Assistant for [YOUR_NAME]
+# Job Application Assistant for Siddhant Gupta
 
 <!-- SETUP: This file is populated by running /setup -->
 <!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Siddhant Gupta, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -16,113 +16,96 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 <!-- This section is auto-populated by /setup. You can also fill it in manually. -->
 
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
-- **Languages:** [YOUR_LANGUAGES]
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Name:** Siddhant Gupta
+- **Location:** Oslo, Norway (Trondheimsveien 64, 0565)
+- **Languages:** English (Native/Bilingual), Hindi (Native/Bilingual), Norwegian (Limited Working), German (Limited Working), Swedish (Elementary)
+- **Status:** Employed, actively looking
+- **Seniority:** Mid-level (~4 years experience)
+- **LinkedIn headline:** "Climate & ESG Data Analyst | Helping Businesses Streamline Scope 1, 2, 3 & Value Chain Decarbonisation | SQL, Python & Power BI"
 
 ### Education
 <!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **M.Sc. in Sustainable Energy Systems** (2019-2021) - Chalmers University of Technology, Sweden
+  - Thesis: "Estimating the technical shallow geothermal potential for heating: A case study of Lörrach, Germany"
+  - Topics: Energy systems modelling, renewable energy, sustainability
+- **B.Tech. in Mechanical Engineering** (2014-2018) - Manipal Institute of Technology, India
+  - Topics: Mechanical engineering fundamentals, thermodynamics, fluid mechanics
 
 ### Professional Experience
 <!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **Climate Footprint Analyst** (05/2022 - Present) - **Ducky AS** (Norway)
+  - Engineered ETL pipelines to integrate ERP system data with emission factor databases, building automated greenhouse gas (GHG) accounting aligned with VSME and ESRS frameworks
+  - Developed NLP-based machine learning models to automatically assign GHG Protocol Scope and emission factors to financial transactions, improving the accuracy and speed of greenhouse gas calculations
+  - Processed and analysed regional telecommunication data to model local commuting patterns, delivering actionable data insights to support sustainable urban mobility initiatives across 5+ municipalities
+  - Developed a lifecycle assessment model (LCA) to compare the environmental impact of various equipment ownership scenarios (reuse, rental, and buying new), demonstrating a 25–30% reduction in lifecycle greenhouse gas emissions to support circular business models
+  - Authored technical and methodological documentation for 3 core products, translating complex data methodologies for technical and non-technical stakeholders
+
+- **Research Assistant** (02/2021 - 09/2021) - **greenventory GmbH / Fraunhofer ISE** (Freiburg, Germany)
+  - Built a geospatial data model using Python and OpenStreetMap to identify optimal installation sites for heat pump integration
+  - Programmed a simulation model using Python to estimate residential geothermal heating potential, providing quantitative data to support municipal heating transition strategies
+  - Developed interactive PowerBI dashboards consolidating ESG and economic KPIs to help municipal planners make data-driven decisions
+
+- **Energy Analyst Intern** (01/2019 - 07/2019) - **Centre for Science and Environment** (New Delhi, India)
+  - Analysed operational and emissions datasets covering 70+ thermal power plants in India to identify environmental compliance trends
+  - Translated quantitative findings into policy briefs and risk assessments, outlining recommendations for pollution control technology adoption in the energy sector
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** Python, SQL, PowerBI, Microsoft Excel, R
+- **Secondary:** JavaScript, Git, MATLAB, GAMS, COMSOL, Tableau, Databricks, openLCA
+- **Domain:** GHG Accounting (GHG Protocol, ISO 14064), ESG Reporting (CSRD, GRI, TCFD), Energy Systems Modelling, Lifecycle Assessment, Geospatial Analysis
+- **Software:** Jupyter, VS Code, PowerBI, Git
 
 ### Certifications
 <!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- **Sustainability Leadership Training** - completed 2019
+- **Urban Mobility Concepts**
+- **Basic Hydraulic Systems**
 
 ### Publications
 <!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+- None listed
 
 ### Awards
-<!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+<!-- List relevant awards, if any -->
+- None listed
 
-### Behavioral Profile
-<!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+### References
+<!-- List your references with name, title, organization, and contact -->
+- **Prof. Erik Ahlgren** — Professor, Department of Space, Earth and Environment, Chalmers University of Technology (Master's thesis supervisor). Reference letter on file praising thesis quality, independence, and analytical depth.
+- **Dr. Ramananda Bhatt** — Professor, Manipal Institute of Technology. Lecturer for Biofuels and Biopolymers subject. Reference letter on file.
+- **Karen Dundas** — Senior Software Developer, Ducky AS (Colleague). Current colleague at Ducky.
 
-### What Excites You
-<!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+## Target Roles & Career Goals
 
-### Target Sectors
-<!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+### Primary Role Types
+- Energy Analyst / Energy Data Analyst
+- ESG/Climate Data Analyst
+- Sustainability Consultant (energy/climate focus)
+- Research Analyst at energy/climate research institutes
 
-### Deal-breakers
-<!-- Hard constraints on job search -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+### Secondary Role Types
+- Management Consultant (sustainability/energy practice)
+- Market Analyst / Commodity Analyst (energy)
+- General Data Analyst
+- Business Intelligence Analyst
 
-## Repo Structure
-- `cv/` - LaTeX CV variants (moderncv template, banking style)
-- `cover_letters/` - LaTeX cover letters (custom cover.cls template)
-- `.agent/skills/` - AI skill definitions for the application workflow
-- `.agents/skills/` - Job search CLI tools
+### Career Goals & Motivations
 
-## Workflow for New Job Applications
-1. User provides a job posting (URL or text)
-2. **Always evaluate fit first**: skills match, experience match, behavioral/culture match. Present this assessment to the user before proceeding.
-3. If good fit: create targeted CV (`cv/main_<company>.tex`) and cover letter (`cover_letters/cover_<company>_<role>.tex`)
-4. **Verify both documents** (see Verification Checklist below)
-5. Prepare interview talking points based on the role requirements and your strengths
+**Energy Industry Focus:** Particularly excited about the energy industry — it's extremely relevant and in a constant state of flux due to the rapid growth of renewable energy and the massive focus on electrification. Wants to apply analytical skills to help shape the energy transition.
 
-**Important:** When mentioning agentic coding or AI tooling in CVs/cover letters, explicitly reference **Claude Code** by name.
+**Consulting Interest:** Open to consulting roles focusing on known sectors (energy, sustainability) while also open to exploring new industries and domains.
 
-## Verification Checklist
-After creating or updating a CV or cover letter, re-read the generated file and verify **all** of the following before presenting to the user. Report the results as a pass/fail checklist.
+**Growth Path:** Wants roles that combine technical data skills with strategic decision-making influence, building a profile as a trusted analyst who turns complex data into actionable business insights.
 
-### Factual accuracy
-- [ ] All claims match actual profile (CANDIDATE.md / candidate profile) - no fabricated skills, experience, or achievements
-- [ ] Job titles, dates, company names, and locations are correct
-- [ ] Contact details are correct
-- [ ] All company-specific claims (partnerships, products, technology, expansions) have been independently verified via WebFetch/WebSearch - do not trust reviewer agent research without verification
+### Ideal Organization Types
+- **Dream organizations:** IEA (International Energy Agency), ITF (International Transport Forum), leading research institutes like **CICERO**, **NORCE**, **IFE** (Institute for Energy Technology)
+- **Preferred:** Corporate, research institutes, consulting firms
+- **Less keen on:** Startups (unless proven track record)
 
-### Targeting
-- [ ] Profile statement / opening paragraph is tailored to the specific role (not generic)
-- [ ] Skills and experience bullets are reframed to match the job requirements
-- [ ] Key job requirements are addressed (with gaps acknowledged where relevant)
-- [ ] Nice-to-have requirements are highlighted where there is a match
-
-### Consistency
-- [ ] CV follows the standard 2-page moderncv/banking format
-- [ ] Cover letter uses cover.cls template and established structure
-- [ ] Tone is consistent across CV and cover letter
-- [ ] No contradictions between CV and cover letter content
-
-### Quality
-- [ ] No LaTeX syntax errors (balanced braces, correct commands)
-- [ ] No spelling or grammar errors
-- [ ] Agentic coding / AI tooling references mention **Claude Code** by name
-- [ ] Cover letter is addressed to the correct person (or "Dear Hiring Manager" if unknown)
-- [ ] Cover letter fits approximately one page
-
-### Compiled PDF verification (MANDATORY - never skip)
-Both documents MUST be compiled and visually inspected via the Read tool on the PDF output. "Looks fine in the .tex" is not acceptable - LaTeX page-break decisions are unpredictable. Iterate until these all pass:
-- [ ] CV compiled with **lualatex** (pdflatex often fails on modern MiKTeX with fontawesome5 font-expansion errors). Cover letter compiled with **xelatex** (cover.cls requires fontspec).
-- [ ] **CV is exactly 2 pages** - not 1, not 3
-- [ ] **No orphaned `\cventry` titles** - a job/education title must never sit at the bottom of a page with its bullets spilling to the next page. Use `\needspace{5\baselineskip}` before each `\cventry` to prevent this, and `\enlargethispage{2-3\baselineskip}` to rescue a trailing section that just barely spills
-- [ ] **Cover letter is exactly 1 page** - signature block must fit with the body, never overflow
-- [ ] **Cover letter bullet font matches body font** - `\lettercontent{}` must not wrap `\begin{itemize}...\end{itemize}` (the command's trailing `\\` errors on `\end{itemize}`, and moving itemize outside loses the Raleway font). Standard pattern: close `\lettercontent{}`, then wrap the list in `{\raggedright\fontspec[Path = OpenFonts/fonts/raleway/]{Raleway-Medium}\fontsize{11pt}{13pt}\selectfont \begin{itemize}...\end{itemize}\par}`
+### Ideal Role Characteristics
+- **Seniority:** Mid-level (not entry-level)
+- **Industry:** Energy (top preference), sustainability/climate, consulting
+- **Type:** Analyst, consultant, or data specialist with strategic influence
+- **Culture:** Mission-driven, intellectually curious, collaborative
+- **Location:** Hybrid/remote-friendly, Oslo-based
+- **Work style:** Autonomy to own projects, supportive management, work-life balance

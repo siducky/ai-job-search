@@ -48,7 +48,11 @@ COMMANDS_DIR = os.path.join(REPO_ROOT, ".agent", "commands")
 SCRAPER_DIR = os.path.join(REPO_ROOT, ".agent", "skills", "job-scraper")
 UPSKILL_DIR = os.path.join(REPO_ROOT, ".agent", "skills", "upskill")
 # ponytail: DeepSeek API is OpenAI-compatible — swap SDK, endpoint, model, done.
-DEEPSEEK_MODEL = "deepseek-chat"
+DEEPSEEK_MODEL = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
+# ponytail: V4 defaults to thinking mode; disable for fast agentic tool-calling.
+# Set DEEPSEEK_THINKING=1 in .env to enable chain-of-thought (slower but more deliberate).
+DEEPSEEK_THINKING = os.environ.get("DEEPSEEK_THINKING", "0") == "1"
+DEEPSEEK_REASONING_EFFORT = os.environ.get("DEEPSEEK_REASONING_EFFORT", "high")
 
 # ---------------------------------------------------------------------------
 # 1. Local Tool Definitions
@@ -274,12 +278,21 @@ def _register_tools(*funcs) -> list:
 class ChatSession:
     """OpenAI-compatible chat session with automatic tool-call loop."""
 
-    def __init__(self, system_prompt: str, model: str, tools: list = None):
+    def __init__(
+        self,
+        system_prompt: str,
+        model: str,
+        tools: list = None,
+        thinking: bool = False,
+        reasoning_effort: str = "high",
+    ):
         self.client = OpenAI(
             api_key=os.environ.get("DEEPSEEK_API_KEY"),
             base_url="https://api.deepseek.com",
         )
         self.model = model
+        self.thinking = thinking
+        self.reasoning_effort = reasoning_effort
         self.messages = [{"role": "system", "content": system_prompt}]
         self.tool_schemas = tools or []
         self.tool_map = {
@@ -295,7 +308,12 @@ class ChatSession:
             kwargs = {"model": self.model, "messages": self.messages}
             if self.tool_schemas:
                 kwargs["tools"] = self.tool_schemas
-                kwargs["temperature"] = 0.2
+                # ponytail: V4 ignores temperature in thinking mode; only set in non-thinking.
+                if not self.thinking:
+                    kwargs["temperature"] = 0.2
+            if self.thinking:
+                kwargs["reasoning_effort"] = self.reasoning_effort
+                kwargs["extra_body"] = {"thinking": {"type": "enabled"}}
 
             response = self.client.chat.completions.create(**kwargs)
             choice = response.choices[0]
@@ -335,7 +353,13 @@ class ChatSession:
 def create_chat_session(system_prompt: str, tools_list: list = None) -> ChatSession:
     """Creates a ChatSession with the given system prompt and tool functions."""
     tool_schemas = _register_tools(*tools_list) if tools_list else []
-    return ChatSession(system_prompt, DEEPSEEK_MODEL, tool_schemas)
+    return ChatSession(
+        system_prompt,
+        DEEPSEEK_MODEL,
+        tool_schemas,
+        thinking=DEEPSEEK_THINKING,
+        reasoning_effort=DEEPSEEK_REASONING_EFFORT,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1052,6 +1076,11 @@ def main():
         print(f"Error establishing session: {e}", flush=True)
         sys.exit(1)
 
+    print(f"  Model:      {DEEPSEEK_MODEL}", flush=True)
+    print(f"  Thinking:   {'ON' if DEEPSEEK_THINKING else 'OFF'}", flush=True)
+    if DEEPSEEK_THINKING:
+        print(f"  Reasoning:  {DEEPSEEK_REASONING_EFFORT}", flush=True)
+    print(flush=True)
     print("Ready! Type a command or ask a question.")
     print("Type '/help' for available commands, '/exit' to quit.\n", flush=True)
 

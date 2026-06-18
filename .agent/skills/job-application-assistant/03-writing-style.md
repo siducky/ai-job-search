@@ -88,9 +88,15 @@ The cover letter is **not a CV repetition**. It should be forward-looking:
 - Mention datasets, data volumes, pipeline complexity
 - Include independent projects
 
-### Domain-specific roles
-- Lead with domain expertise and specific methods
+### Domain-specific roles (ESG, sustainability, energy)
+- Lead with domain expertise and specific methods (GHG Protocol, LCA, ESRS/CSRD)
 - Frame technical skills as tools that enhance domain analysis
+- Emphasize regulatory knowledge and reporting frameworks
+
+### Analyst roles (data analyst, market analyst, commodity analyst)
+- Lead with quantitative skills: Python, SQL, statistical modelling
+- Emphasize data pipeline experience and ability to turn raw data into insights
+- Highlight forecasting, scenario analysis, and dashboard communication
 
 ### Consulting/Advisory roles
 - Lead with stakeholder communication, project coordination, client interaction

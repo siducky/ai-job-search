@@ -1,7 +1,5 @@
 # CV Templates and Tailoring Guide
 
-<!-- SETUP: Profile statements and section ordering are personalized by running /setup -->
-
 ## Template: LaTeX moderncv (Banking Style)
 
 All CVs use the moderncv LaTeX package with the "banking" style and "blue" color scheme.
@@ -39,18 +37,18 @@ Expected output: `Output written on main_<company>.pdf (2 pages, ...)`. Any page
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
+    pdftitle={Siddhant Gupta - CV},
     pdfpagemode=FullScreen,
 }
 \usepackage[scale=0.77]{geometry}
 \usepackage{import}
 
 % Personal data
-\name{[FIRST_NAME]}{[LAST_NAME]}
-\address{[YOUR_ADDRESS]}{}{}
-\phone[mobile]{[YOUR_PHONE]}
-\email{[YOUR_EMAIL]}
-\extrainfo{\href{[YOUR_LINKEDIN_URL]}{LinkedIn}, \href{[YOUR_GITHUB_URL]}{GitHub}}
+\name{Siddhant}{Gupta}
+\address{Trondheimsveien 64, Oslo, Norway}{}{}
+\phone[mobile]{+47 92206297}
+\email{siddhantbenz@gmail.com}
+\social[linkedin]{siddhantgupta1996}
 
 \begin{document}
 \makecvtitle
@@ -105,12 +103,14 @@ Write 5-7 lines that function as an "elevator pitch": a concise, compelling intr
 
 **Create 2-3 profile statement templates for your main role types:**
 
-<!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For ESG / Climate Data Analyst roles:**
+> Data analyst with 4+ years of experience in greenhouse gas accounting, ESG reporting, and environmental data analysis. Builds automated pipelines and ML models that turn complex datasets into decision-ready insights aligned with CSRD, GHG Protocol, and TCFD frameworks. Helps organisations measure, report, and reduce their climate footprint.
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For Data Analyst / Energy Analyst roles:**
+> Data analyst with 4+ years of experience turning complex environmental and energy data into actionable insights. Combines strong Python, SQL, and Power BI skills with domain expertise in energy systems modelling, lifecycle assessment, and regulatory reporting. Builds scalable data pipelines and analytical tools that support strategic decision-making.
+
+**For Market / Commodity Analyst roles:**
+> Analytical professional with a Master's in Sustainable Energy Systems and 4+ years of experience in data modelling, quantitative analysis, and cross-functional communication. Applies rigorous data methods — from optimisation modelling to ML-driven classification — to produce clear, defensible insights. Combines technical depth with a commercial curiosity about markets and geopolitics.
 
 ### Core Competencies / Skills Section (Best Practice)
 Reorder and emphasize based on the role. Use bold category labels.
@@ -232,10 +232,19 @@ The section order varies by role type:
 6. Publications & Awards
 7. References
 
-**For domain-specific / specialist roles:**
+**For domain-specific / specialist roles (ESG, energy):**
 1. Profile statement / elevator pitch
 2. Core competencies / Skills
 3. Education (reverse chronological) - credentials are a key qualifier
 4. Professional Experience (reverse chronological)
-5. Publications & Awards
+5. Languages
+6. Certifications
+7. References
+
+**For analyst roles (data, market, commodity):**
+1. Profile statement / elevator pitch
+2. Core competencies / Skills
+3. Professional Experience (reverse chronological)
+4. Education (reverse chronological)
+5. Languages
 6. References
