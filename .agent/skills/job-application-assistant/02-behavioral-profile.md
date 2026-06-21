@@ -59,15 +59,28 @@ When a job posting mentions these, flag as **potential friction** (not deal-brea
 - "Sales", "business development" (not a match)
 
 ## Management Style Preferences
-- Works best with managers who set clear objectives and then **delegate with trust**, allowing ownership of delivery
-- Prefers **autonomy over micromanagement** — regular alignment check-ins are welcome, but day-to-day task oversight is not necessary
-- Values approachable, **accessible leadership** — managers who make themselves available for guidance when challenges arise
-- Appreciates **constructive, data-informed feedback** delivered in a supportive manner
-- Thrives under managers who **provide opportunities for professional growth** — exposure to new skills, stretch assignments, and room to explore beyond defined responsibilities
-- Motivated by leaders who **invest in the team's development** and create a culture of continuous learning
+To maximize impact and maintain long-term engagement, Siddhant thrives under leadership styles defined by the following four pillars:
+
+* **Objective-Led Autonomy:** Works best with managers who define clear strategic outcomes and delegate execution with trust. Prefers ownership over the delivery process, welcoming regular structural alignment while avoiding daily task oversight.
+* **Accessible Guidance:** Values approachable, highly communicative leadership. Appreciates managers who make themselves readily available for technical or strategic guidance when complex hurdles arise.
+* **Constructive, Data-Informed Feedback:** Welcomes objective, data-driven feedback delivered in a supportive, growth-oriented manner to help refine methodologies and improve output.
+* **Continuous Professional Development:** Thrives under managers who actively invest in their team's capabilities, fostering a culture of continuous learning and providing stretch assignments to explore adjacent skills.
 
 ## Using This in Applications
-- **Cover letters:** Emphasize analytical rigor, adaptability to new domains, and the ability to translate complex data into actionable insights for stakeholders
-- **CV:** Lead with quantifiable achievements; highlight the range of tools and methods used across different roles
-- **Interviews:** Use STAR examples that demonstrate independent problem-solving, cross-functional collaboration, and measurable impact
-- **Don't overstate:** Avoid claiming direct financial sector or commodity trading experience — emphasize transferable analytical skills instead
+Apply these core principles across all stages of the hiring process to ensure your technical skills and domain consistency are communicated effectively:
+
+* **Cover Letters:**
+  * **Analytical Rigor:** Highlight your ability to translate complex, unstructured datasets into clear, actionable insights for cross-functional stakeholders.
+  * **Domain Consistency:** Emphasize that your academic background (M.Sc. in Sustainable Energy Systems) and entire professional history are deeply aligned with energy systems and carbon accounting (if job is relevant).
+  * **International Adaptability:** Frame your experience studying and working across multiple countries (India, Germany, Sweden, and Norway) as proof of cultural adaptability and strong communication skills.
+  * **Professional Agility:** Highlight your ability to wear multiple technical hats (e.g., moving between data engineering, helping with customer requests , and writing documentation in startup environments like Ducky AS).
+
+* **CV Layout:**
+  * **Quantifiable Impact:** Lead your experience bullets with measurable achievements (e.g., percentage reductions in emissions, model speed improvements, or the number of municipalities supported).
+  * **Tooling Diversity:** Explicitly name-drop the exact combination of programming, visualization, and modeling tools (Python, SQL, GAMS, Power BI) used in each specific role.
+
+* **Interviews:**
+  * **Structured Delivery (STAR):** Prepare structured STAR (Situation, Task, Action, Result) examples that focus on independent problem-solving, collaborating with developers and policymakers, and delivering verifiable outcomes.
+
+* **Managing Experience Gaps (The Backtrack Test):**
+  * **Transferable Value:** Do not overstate or claim direct financial sector or commodity trading experience if a posting asks for it. Instead, highlight your highly transferable quantitative toolkit—such as physical energy systems analysis, optimization modeling, and independent market tracking—as a strong foundation for the domain.

@@ -21,20 +21,30 @@
 
 ## Application Headline (Best Practice)
 
-The subject line / headline of the application should be engaging and specific, not generic.
+The subject line / headline must be clean, professional, and clear. You can use either of the following formats depending on the template structure:
 
-**Bad:** "Application for Sales Engineer Position" / "Ansogning til stilling som ingeniør"
-**Good:** "[Your specialty] specializing in [relevant keyword from posting]"
+* **Format A (Traditional):** `Application for the position of “[Role]” at [Company]`
+* **Format B (Keyword-focused):** `[Your specialty] specializing in [relevant keyword/tool from posting]`
 
-Formula: **[Title/education] + [relevant keyword from the job posting]**
+---
 
 ## Scannable Structure (Best Practice)
 
-Employers scan applications quickly. Structure for easy reading:
-- Use descriptive subheadings that reflect content (not just "Introduction" / "Body")
-- Include industry-specific keywords in headings where natural
-- Write concisely - eliminate filler language
-- One page maximum (hard rule)
+Structure the letter for rapid scanning. You may choose between two layout methodologies:
+
+### Option 1: Narrative Block Paragraph Format (The Hydro Model)
+A traditional, highly cohesive 5-paragraph layout that flows logically without lists or subheadings:
+1. **Paragraph 1:** Opening, role targeting, and immediate link to credentials.
+2. **Paragraph 2:** Core technical experience (e.g., current role as lead data scientist, core framework applications).
+3. **Paragraph 3:** Broader modeling capabilities, tools, and cross-functional communication.
+4. **Paragraph 4:** Strategic gap-bridging and personal motivation (e.g., linking general analysis skills to commodity markets and geopolitics).
+5. **Paragraph 5:** Concise, confident close.
+
+### Option 2: Bulleted/Subheading Format
+A highly scannable, modern layout using:
+- Bold category labels for bullets to highlight distinct competencies.
+- Concise bullet points (3–5 max) demonstrating quantitative outcomes.
+- One page maximum (hard rule for both formats).
 
 ## Forward-Looking Framing (Best Practice)
 
@@ -48,17 +58,15 @@ The cover letter is **not a CV repetition**. It should be forward-looking:
 
 ### Opening Paragraph
 - State the role and why you're writing (1 sentence)
-- Immediately connect your background to the role (1-2 sentences)
+- Immediately connect your academic and professional background to the core function of the target role (1-2 sentences).
 - Make it specific to this company/role, not a template opener
 
 ### Body Paragraphs - Task-Solving Focus
-- Lead with the most relevant experience for this specific role
+- **Lead with active role context:** Identify your current title and immediately list core technical responsibilities (e.g., "In my current role, I work as...").
+- **Specify the tooling:** Explicitly name the programming languages, modeling techniques, and data systems you use.
+- **Bridge secondary skills:** Use transitions like "Beyond reporting, I have worked extensively with..." to showcase adjacent competencies (e.g., simulation visualization, or technical documentation).
 - Frame content around **which of their tasks you can solve and how**
-- Describe your approach: methods, tools, and knowledge you'll bring
-- Use bullet lists for concrete skills/achievements when appropriate (3-5 bullets)
-- Each bullet should be specific and outcome-oriented
-- Include at least one example that shows initiative
-- Include 1-2 brief examples of past success, but keep the focus forward-looking
+- Include at least one example that shows initiative or include 1-2 brief examples of past success, but keep the focus forward-looking (both if relevant)
 
 ### Motivation / Why This Company (place early)
 - The **first section** after the opening should explain why you're applying to *this specific company*
@@ -71,10 +79,17 @@ The cover letter is **not a CV repetition**. It should be forward-looking:
 - Explain why this company specifically, not just "a company like yours"
 - Connect domain knowledge to their business context
 
+### Addressing Domain Gaps & Motivation
+- Place the gap-bridging and motivation section clearly in the second half of the letter.
+- Pivot a lack of direct industry experience into an asset by linking it to:
+   - Theoretical/academic foundations.
+   - Active personal study (e.g., tracking geopolitics or market trends in your spare time).
+   - High enthusiasm for the specific business context of the employer.
+
 ### Closing
 - Brief, confident, forward-looking
 - "I look forward to hearing from you" or "I would welcome the opportunity to discuss..."
-- No begging or over-enthusiasm
+- Sign off with a standard professional closing (e.g., "Sincerely," or "Kind regards,").
 
 ## Bullet Point Style
 - Start with action verb or bold category label
@@ -85,28 +100,27 @@ The cover letter is **not a CV repetition**. It should be forward-looking:
 
 ### Technical/ML roles
 - Lead with programming languages, ML frameworks, specific model architectures
-- Mention datasets, data volumes, pipeline complexity
+- Mention the NLP classification project
+- Talk about the Telecommunications data to model commuting patterns pipeline
 - Include independent projects
 
 ### Domain-specific roles (ESG, sustainability, energy)
 - Lead with domain expertise and specific methods (GHG Protocol, LCA, ESRS/CSRD)
 - Frame technical skills as tools that enhance domain analysis
 - Emphasize regulatory knowledge and reporting frameworks
+- Connect sustainability reporting to broader business impact.
+- Mention passion for solving the climate crisis (issue close to heart)
 
 ### Analyst roles (data analyst, market analyst, commodity analyst)
-- Lead with quantitative skills: Python, SQL, statistical modelling
-- Emphasize data pipeline experience and ability to turn raw data into insights
-- Highlight forecasting, scenario analysis, and dashboard communication
-
+- Lead with analytical skills: Python, SQL, statistical modelling
+- Emphasize data pipeline experience, energy systems analysis, optimization, simulation modeling, and interactive dashboard development (Power BI).
+- Highlight writing product documentation, blogs and making stakeholder presentations.
 ### Consulting/Advisory roles
 - Lead with stakeholder communication, project coordination, client interaction
-- Emphasize ability to bridge technical and business perspectives
+- Emphasize the ability to bridge technical data science with business outcomes.
+- Mention helping customers debug issues.
 
 ### Leadership/Senior roles
 - Lead with project management, mentoring, course development
-- Frame advanced degrees as evidence of independent project delivery
+- Frame advanced degrees (e.g., Sustainable Energy Systems) as evidence of independent project delivery and systemic thinking.
 
-## Multi-language Applications
-- Default to the language of the job posting
-- Cover letters in the posting's language should feel natural, not translated
-- Slightly warmer, more personal tone may be acceptable in some languages

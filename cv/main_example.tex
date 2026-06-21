@@ -4,7 +4,7 @@
 %%
 %% SETUP: Populated by /setup
 %% Compile with: lualatex main_example.tex
-%% (pdflatex often fails on modern MiKTeX with fontawesome5 font-expansion errors.)
+%% (Note: Running the compiler twice is normal to resolve hyperref/outline warnings.)
 
 \documentclass[11pt,a4paper,sans]{moderncv}
 \moderncvstyle{banking}
@@ -12,6 +12,11 @@
 
 \usepackage[scale=0.80]{geometry}
 \usepackage{needspace} % Added to dynamically manage awkward page breaks
+
+% Force both first and last name AND section headings to render in moderncv
+% blue (color1). This overrides the engine defaults using universal macros.
+\renewcommand*{\namefont}{\fontsize{34}{36}\bfseries\upshape\color{color1}\selectfont}
+\renewcommand*{\sectionfont}{\Large\bfseries\upshape\color{color1}\selectfont}
 
 % personal data
 \name{Siddhant}{Gupta}
@@ -29,7 +34,7 @@
 % ============================================================
 
 \vspace{6pt}
-{\small Data analyst with 4+ years of experience in greenhouse gas accounting, ESG reporting, and environmental data analysis. Builds automated pipelines and ML models that turn complex datasets into decision-ready insights aligned with CSRD, GHG Protocol, and TCFD frameworks. Specialises in helping organisations measure, report, and reduce their climate footprint.}
+{\small Data analyst with 4+ years of experience in greenhouse gas accounting, ESG reporting, and environmental data analysis. Builds automated pipelines and ML models that turn complex datasets into decision-ready insights aligned with CSRD, GHG Protocol, and TCFD frameworks. Specialises in helping organisations measure, report, and reduce their climate footprint.\par}
 
 % ============================================================
 %     CORE COMPETENCIES
@@ -39,15 +44,13 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item \textbf{Data Engineering \& Analysis}: Python (pandas, NumPy, scikit-learn), SQL, ETL pipeline development, data modelling, statistical analysis.
-
-\item \textbf{ML \& NLP}: Transformer-based NLP models for text classification, automated GHG Scope assignment, model deployment and integration.
+\item \textbf{Data Engineering \& Analysis}: Python (pandas, NumPy, scikit-learn), SQL, ETL pipelines, data modelling, statistical analysis.
 
 \item \textbf{ESG \& Carbon Accounting}: GHG Protocol (Scope 1, 2, 3), CSRD/ESRS, VSME, GRI, TCFD, ISO 14064, lifecycle assessment (LCA).
 
 \item \textbf{Visualisation \& BI}: PowerBI, Microsoft Excel, interactive dashboard development, technical documentation, stakeholder reporting.
 
-\item \textbf{Energy Systems Modelling}: Geospatial analysis (OpenStreetMap, GIS), optimisation modelling (GAMS), simulation modelling, renewable energy potential assessment.
+\item \textbf{Systems Modelling}: Geospatial analysis (OpenStreetMap, GIS), optimisation modelling, simulation modelling, renewable energy potential assessment.
 
 \end{itemize}
 
@@ -134,9 +137,9 @@ Thesis: ``Estimating the technical shallow geothermal potential for heating: A c
 \section{References}
 \vspace{1pt}
 \begin{itemize}
-\item{Prof. Erik Ahlgren, Department of Space, Earth and Environment, Chalmers University of Technology}
-\item{Dr. Ramananda Bhatt, Professor, Manipal Institute of Technology}
-\item{Karen Dundas, Senior Software Developer, Ducky AS}
+\item Prof. Erik Ahlgren, Department of Space, Earth and Environment, Chalmers University of Technology
+\item Dr. Ramananda Bhatt, Professor, Manipal Institute of Technology
+\item Karen Dundas, Senior Software Developer, Ducky AS
 \end{itemize}
 
 \end{document}

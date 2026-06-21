@@ -80,19 +80,47 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \currentdate{\today}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Cover Letter - [Company], [Role]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[]{cover}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\fancyhf{}
+
+\rfoot{Page \thepage \hspace{0pt}}
+\thispagestyle{empty}
+\renewcommand{\headrulewidth}{0pt}
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     TITLE NAME
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\namesection{}{\Huge{Siddhant Gupta}}{  \href{mailto:siddhantbenz@gmail.com}{siddhantbenz@gmail.com} | +47 92206297 |  \urlstyle{same}\href{https://www.linkedin.com/in/siddhantgupta1996}{LinkedIn}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     MAIN COVER LETTER CONTENT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\currentdate{\today}
 \lettercontent{Dear [Name/Team],}
 
 \lettercontent{[Opening paragraph - role, connection to background, 2-3 sentences]}
 
-\lettercontent{[Body paragraph - most relevant experience, then bullet list]
+\lettercontent{[Body paragraph - most relevant experience, then bullet list:]}
 
+{\raggedright\fontspec[Path = OpenFonts/fonts/raleway/]{Raleway-Medium}\fontsize{11pt}{13pt}\selectfont
 \begin{itemize}
     \item [Concrete achievement/skill 1]
     \item [Concrete achievement/skill 2]
     \item [Concrete achievement/skill 3]
-\end{itemize}
+\end{itemize}\par}
+\vspace{6pt}
 
-[Connection to company - why this role, why this company specifically]}
+\lettercontent{[Connection to company - why this role, why this company specifically]}
 
 \lettercontent{[Personal fit paragraph - behavioral strengths, team contribution, 2-3 sentences]}
 
@@ -120,7 +148,6 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 
 ### Salutation
 - If you know the hiring manager's name: "Dear [First Last],"
-- If you know the team: "Dear [Company] hiring team,"
 - Generic: "Dear [Company]," (avoid "To whom it may concern")
 
 ### Length - Hard 1-Page Limit
