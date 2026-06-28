@@ -34,41 +34,21 @@
 % ============================================================
 
 \vspace{6pt}
-{\small Data analyst with 4+ years of experience in greenhouse gas accounting, ESG reporting, and environmental data analysis. Builds automated pipelines and ML models that turn complex datasets into decision-ready insights aligned with CSRD, GHG Protocol, and TCFD frameworks. Specialises in helping organisations measure, report, and reduce their climate footprint.\par}
-
-% ============================================================
-%     CORE COMPETENCIES
-% ============================================================
-
-\section{Core Competencies}
-\vspace{1pt}
-\begin{itemize}
-
-\item \textbf{Data Engineering \& Analysis}: Python (pandas, NumPy, scikit-learn), SQL, ETL pipelines, data modelling, statistical analysis.
-
-\item \textbf{ESG \& Carbon Accounting}: GHG Protocol (Scope 1, 2, 3), CSRD/ESRS, VSME, GRI, TCFD, ISO 14064, lifecycle assessment (LCA).
-
-\item \textbf{Visualisation \& BI}: PowerBI, Microsoft Excel, interactive dashboard development, technical documentation, stakeholder reporting.
-
-\item \textbf{Systems Modelling}: Geospatial analysis (OpenStreetMap, GIS), optimisation modelling, simulation modelling, renewable energy potential assessment.
-
-\end{itemize}
-
+{\small Data Engineer/Analyst with 4+ years of experience building scalable data pipelines and delivering data-driven insights. Combines expertise in carbon accounting and ESG frameworks with strong engineering and programming skills to build robust, scalable data solutions.\par}
 % ============================================================
 %     PROFESSIONAL EXPERIENCE
 % ============================================================
-
 \section{Professional Experience}
 \vspace{3pt}
 
 % --- Most Recent Role ---
 \cventry{05/2022--Present}{Climate Footprint Analyst}{Ducky AS}{Norway}{}{
 \begin{itemize}
-    \item Engineered ETL pipelines to integrate ERP system data with emission factor databases, building automated greenhouse gas (GHG) accounting aligned with VSME and ESRS frameworks
-    \item Developed NLP-based machine learning models to automatically assign GHG Protocol Scope and emission factors to financial transactions, improving the accuracy and speed of greenhouse gas calculations
-    \item Processed and analysed regional telecommunication data to model local commuting patterns, delivering actionable data insights to support sustainable urban mobility initiatives across 5+ municipalities
-    \item Developed a lifecycle assessment model (LCA) to compare the environmental impact of various equipment ownership scenarios (reuse, rental, and buying new), demonstrating a 25--30\% reduction in lifecycle greenhouse gas emissions to support circular business models
-    \item Authored technical and methodological documentation for 3 core products, translating complex data methodologies for technical and non-technical stakeholders
+    \item Engineered ETL pipelines to integrate ERP data with emission factor databases, automating end-to-end carbon accounting workflows compliant with VSME and ESRS frameworks.
+    \item Implemented an NLP-based data classification pipeline to automate GHG Scope and emission factor attribution to financial transactions, reducing manual processing time by 80\%.
+    \item Architected a scalable data pipeline to ingest, normalize and transform regional telecommunication data for modelling local mobility patterns, providing decision-support for sustainable urban mobility planning across 5+ municipalities.
+    \item Developed a lifecycle assessment model (LCA) in Python to compare the environmental impact of various equipment ownership scenarios (reuse, rental, and buying new), demonstrating a 25--30\% reduction in lifecycle greenhouse gas emissions.
+    \item Authored and maintained technical documentation for three core data products, translating complex methodologies into clear documentation for engineers, product teams, and business stakeholders.
 \end{itemize}}
 
 \vspace{3pt}
@@ -76,21 +56,32 @@
 % --- Previous Role ---
 \cventry{02/2021--09/2021}{Research Assistant}{greenventory GmbH / Fraunhofer ISE}{Freiburg, Germany}{}{
 \begin{itemize}
-    \item Built a geospatial data model using Python and OpenStreetMap to identify optimal installation sites for heat pump integration
-    \item Programmed a simulation model using Python to estimate residential geothermal heating potential, providing quantitative data to support municipal heating transition strategies
-    \item Developed interactive PowerBI dashboards consolidating ESG and economic KPIs to help municipal planners make data-driven decisions
+    \item Built a geospatial model using OpenStreetMap data to identify suitable locations for heat pump installations. Implemented constraint-based filtering logic to programmatically enforce regulatory and technical zoning requirements, enabling optimal site selection.
+    \item Developed a simulation model in Python, integrating various environmental datasets (soil conductivity, ground temperature data, etc.) to model geothermal energy potential, providing quantitative data to support municipal heating transition strategies.
 \end{itemize}}
 
 \vspace{3pt}
 
 % --- Earlier Role ---
 % Dynamically check if there is enough space left on page 1 for the whole entry
-\needspace{6\baselineskip}
+\needspace{2\baselineskip}
 \cventry{01/2019--07/2019}{Energy Analyst Intern}{Centre for Science and Environment}{New Delhi, India}{}{
 \begin{itemize}
-    \item Analysed operational and emissions datasets covering 70+ thermal power plants in India to identify environmental compliance trends
-    \item Translated quantitative findings into policy briefs and risk assessments, outlining recommendations for pollution control technology adoption in the energy sector
+    \item Processed, cleaned, and analyzed emissions datasets covering 70+ thermal power plants using Python, improving data quality and providing analytical insights into environmental compliance trends.
+    \item Translated quantitative findings into policy recommendations, outlining strategies for pollution control technology adoption by thermal power plants.
 \end{itemize}}
+% ============================================================
+%     CORE COMPETENCIES
+% ============================================================
+
+\section{Technical Stack}
+\vspace{1pt}
+\begin{itemize}
+\item \textbf{Programming}: Python (Pandas, NumPy, scikit-learn), SQL, R, JavaScript.
+\item \textbf{Cloud \& DevOps}: GCP, Docker, CI/CD, Git.
+\item \textbf{Data Engineering}: ETL Pipelines, API Integration, Data Modeling, Data Integration, Data Validation, Data Visualization (Tableau, Power BI).
+\item \textbf{ESG & Carbon Accounting}: Greenhouse Gas (GHG) Protocol (Scope 1, 2, 3), ESG Reporting (CSRD, ESRS, GRI), TCFD, ISO 14064, Lifecycle Assessment (LCA).
+\end{itemize}
 
 % ============================================================
 %     EDUCATION
@@ -100,7 +91,7 @@
 \vspace{1pt}
 
 \cventry{2019--2021}{M.Sc. in Sustainable Energy Systems}{Chalmers University of Technology}{Gothenburg, Sweden}{}{
-Thesis: ``Estimating the technical shallow geothermal potential for heating: A case study of L\"{o}rrach, Germany.'' Developed a geospatial simulation model to assess residential geothermal heating potential.
+Thesis: ``Estimating the technical shallow geothermal potential for heating: A case study of L\"{o}rrach, Germany.''
 }
 
 \vspace{3pt}
@@ -109,37 +100,26 @@ Thesis: ``Estimating the technical shallow geothermal potential for heating: A c
 }
 
 % ============================================================
+%     PROJECTS
+% ============================================================
+
+\section{Projects}
+\vspace{1pt}
+\begin{itemize}
+\item \textbf{Automated Emission Factor Matching for Carbon Accounting}: Architected an end-to-end ETL pipeline that maps messy procurement data to standardized emission factors. The pipeline ingests and normalizes heterogeneous emissions datasets, and performs a hybrid matching strategy using semantic vector embeddings and LLM-based reasoning for high-precision mapping of procurement data to emission factors.
+\item \textbf{Future Electricity System of Sweden}: Formulated a linear programming optimization model of the Swedish electricity system in GAMS to minimize total system costs and emissions. Performed sensitivity analyses assessing the impact of varying renewable energy penetration on the merit order, electricity prices, and cross-border electricity trade.
+% ============================================================
 %     LANGUAGES
 % ============================================================
 
 \section{Languages}
 \vspace{1pt}
 \begin{itemize}
-\item English (Native/Bilingual), Hindi (Native/Bilingual), Norwegian (Limited Working), German (Limited Working), Swedish (Elementary).
-\end{itemize}
-
-% ============================================================
-%     CERTIFICATIONS
-% ============================================================
-
-\section{Certifications}
-\vspace{1pt}
-\begin{itemize}
-\item Sustainability Leadership Training (2019)
-\item Urban Mobility Concepts
-\item Basic Hydraulic Systems
+\item English (Native/Bilingual), Hindi (Native/Bilingual), Norwegian (Limited Working), German (Limited Working).
 \end{itemize}
 
 % ============================================================
 %     REFERENCES
 % ============================================================
-
-\section{References}
-\vspace{1pt}
-\begin{itemize}
-\item Prof. Erik Ahlgren, Department of Space, Earth and Environment, Chalmers University of Technology
-\item Dr. Ramananda Bhatt, Professor, Manipal Institute of Technology
-\item Karen Dundas, Senior Software Developer, Ducky AS
-\end{itemize}
 
 \end{document}

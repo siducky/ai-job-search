@@ -12,6 +12,10 @@
    - **Flag it:** Combining academic + industry experience into a single claim that implies it was all industry; describing work using the posting's specific terminology when the actual work was adjacent but not the same.
    - **Never:** Claiming experience the candidate doesn't have; implying they worked in a domain they haven't.
    When a bullet falls in the "flag it" zone, present it to the user after drafting with: "This bullet is a stretch because X. Keep, soften, or drop?" If the evaluation experience match score is below 50, warn before proceeding to drafting that extensive reframing would be needed.
+7. **COVER LETTER MUST CONTAIN AT LEAST ONE QUANTIFIED OUTCOME.** The candidate's CV has specific numbers (25-30% reduction, 5+ municipalities, 70+ power plants, 3 core products). At least one of these must appear in the cover letter. A zero-metrics cover letter is rejected. This is non-negotiable.
+8. **COVER LETTER MUST CONTAIN AT LEAST 2 SPECIFIC VERIFIED COMPANY FACTS.** Generic mission statements ("industry leadership in sustainable X") are not enough. Every company-specific claim must be independently verified via WebSearch/WebFetch before inclusion. See the full rule in `06-cover-letter-templates.md` for what qualifies.
+9. **COVER LETTER MUST PASS THE CV REPETITION TEST.** After writing, check if any sentence could be lifted from the CV and still make sense. If yes, rewrite it. The cover letter is forward-looking — it describes problems you'll solve, not just what you've already done.
+10. **COVER LETTER MUST USE THE CORRECT TEMPLATE.** The document class MUST be `\documentclass[]{cover}`. Do NOT use `article` or any other class. The `cover.cls` template provides the branded header, correct fonts (Lato/Raleway), and proper signature block.
 
 ## Tone
 - **Warm but direct.** Friendly and approachable, but confident without arrogance.

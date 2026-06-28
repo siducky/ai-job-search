@@ -102,11 +102,13 @@ Write 5-7 lines that function as an "elevator pitch": a concise, compelling intr
 **For Data Analyst / Data Scientist roles:**
 > Data analyst with 4+ years of experience developing quantitative models, automated data pipelines, and predictive tools. Combines strong Python, SQL, and machine learning skills with deep domain knowledge in carbon accounting and energy systems. Translates raw, technical data into clear, data-driven insights for strategic business stakeholders.
 
-**For Energy / Commodity Analyst roles:**
-> Quantitative analyst with 4+ years of experience in energy systems modelling, power market dynamics and market analysis. Leverages quantitative skills in Python and SQL to analyze system responses, renewable integration, and pricing dynamics. Translates complex technical and geopolitical insights into actionable risk assessments and commercial trading strategies.
+**For Energy / Energy System Analyst roles:**
+> Energy systems analyst with 4+ years of experience in energy systems modelling, optimisation, and geospatial analysis. Applies Python, SQL, and GAMS to model renewable integration, grid dynamics, and energy transition scenarios. Translates quantitative analysis of physical energy systems into structured insights for strategic decision-making. Background in sustainable energy systems (M.Sc.) with hands-on simulation and optimisation modelling experience.
+> 
+> **⚠️ Backtrack Test Warning:** Do NOT use this template for roles requiring actual power trading, market risk, or commodity trading experience. The candidate has energy systems analysis experience — this is adjacent to but distinct from commercial trading. If the posting asks for "power trading" or "commodity risk" experience, use the Analyst/Data template above and frame adjacent quantitative skills honestly.
 
-**For Researcher / PhD roles:**
-> Experienced analyst with a Master’s in Sustainable Energy Systems, having a strong foundation in quantitative modelling, systems analysis and optimization. Applies rigorous data science (Python, NLP, SQL) to evaluate decarboonisation pathways and other complex sustainability metrics.
+**For Researcher / Analyst roles at research institutes:**
+> Analyst with a Master's in Sustainable Energy Systems, combining quantitative modelling skills (Python, SQL, GAMS) with domain expertise in carbon accounting, energy systems, and lifecycle assessment. Applies data science methods to evaluate decarbonisation pathways, energy transition scenarios, and sustainability metrics. Experienced in translating complex quantitative analysis into clear policy and strategy recommendations.
 
 ### Core Competencies / Skills Section (Best Practice)
 Tailor, prioritize, and structure this section to align directly with the primary requirements of the target job description.
@@ -173,6 +175,13 @@ Cut content — do not compress geometry or `\vspace`. See "Relevance-weighted c
 **Problem: content finishes early on page 2 (feels thin)**
 Restore the highest-relevance item that was previously cut — a CV that ends mid-page 2 looks incomplete.
 
+## ⚠️ Hard Rule: Differentiation Check (anti-copy-paste)
+Every CV must be unique to the target role. Before writing the CV, the drafter must pass this self-check:
+
+> **"State in 2-3 sentences how this CV's profile statement, competency ordering, and experience bullets differ from the Position Green CV and the Hydro CV. If you cannot articulate a clear difference, the targeting is insufficient."**
+
+This check exists because in practice, CVs across different roles (e.g., quant risk analyst vs. customer success manager) were being written with nearly identical profile statements and competency lists. Two roles with different requirements need two different CVs.
+
 ## Page Budget - Hard 2-Page Limit
 
 The CV **must** fit on exactly 2 pages when compiled. Use these content limits as a guide:
@@ -217,6 +226,16 @@ Cut the lowest-total-score line first, regardless of which section it sits in.
 - Do not mechanically cut from the bottom of a static section list without checking relevance. "Cut the oldest role first" is wrong if that role is literally about the skill the posting asks for.
 - Do not cut the one concrete example the cover letter leans on. Relevance is measured against the cover letter you wrote, not just the job posting — interviewers will have read both.
 - Do not cut to fit if the fit is borderline (2.02 pages). Prefer `\enlargethispage{2-3\baselineskip}` on a late section for near-misses; reserve content cuts for genuine overflow (content on page 3 that is more than a single trailing section).
+
+## Hard Rule: Backtrack Test on Profile Statements
+
+Every profile statement must pass the **interview backtrack test**: could the candidate comfortably explain every claim in the profile in an interview without backtracking?
+
+- **OK:** "Energy systems modelling experience using GAMS and Python to simulate renewable integration"
+- **Flag it:** "Power market dynamics and commercial trading strategies" — the candidate does not have trading experience
+- **Never:** Any claim that implies domain experience the candidate does not have
+
+If a profile statement would require the candidate to say "well, what I actually meant was..." in an interview, the statement is too far. Rewrite it.
 
 ## Recommended Section Order
 
