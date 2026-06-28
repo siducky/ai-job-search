@@ -1,5 +1,7 @@
 openai
 pypdf
+python-dotenv
 gspread
 google-auth
 openpyxl
+pylint

@@ -24,8 +24,8 @@ Follow these steps **exactly in order**. Do not skip steps.
 ## Step 1: DRAFTER - Evaluate Fit
 
 Read the evaluation framework:
-- `.gemini/skills/job-application-assistant/04-job-evaluation.md`
-- `.gemini/skills/job-application-assistant/01-candidate-profile.md`
+- `..agent/skills/job-application-assistant/04-job-evaluation.md`
+- `..agent/skills/job-application-assistant/01-candidate-profile.md`
 
 Using the framework from `04-job-evaluation.md`, evaluate the job posting against the candidate's profile. If the salary lookup tool is configured, run:
 
@@ -55,13 +55,20 @@ After presenting the evaluation, ask the user:
 You already have `01-candidate-profile.md` and `04-job-evaluation.md` in context from Step 1. **Do not re-read them.**
 
 Read only the reference files you do not yet have:
-- `.gemini/skills/job-application-assistant/03-writing-style.md`
-- `.gemini/skills/job-application-assistant/05-cv-templates.md`
-- `.gemini/skills/job-application-assistant/06-cover-letter-templates.md`
+- `..agent/skills/job-application-assistant/03-writing-style.md`
+- `..agent/skills/job-application-assistant/05-cv-templates.md`
+- `..agent/skills/job-application-assistant/06-cover-letter-templates.md`
 
 Also read the most recent existing CV and cover letter files for concrete structural reference (one of each is enough):
 - Read any existing `cv/main_*.tex` file as a LaTeX template reference
 - Read any existing `cover_letters/cover_*.tex` or `cover_letters/Cover_*.tex` file as a template reference
+
+### ⚠️ Differentiation Check (REQUIRED before writing)
+Before writing any files, pass this self-check. **Do not skip this step.**
+
+> **State in 2-3 sentences how this CV's profile statement, competency ordering, and experience bullets will differ from previous applications (e.g., the Position Green CV and Hydro CV). If you cannot articulate a clear difference, the targeting is insufficient.**
+
+This check exists because in practice, CVs for different roles (e.g., quant risk analyst vs. customer success manager) were being written with nearly identical profile statements. Two roles with different requirements need two different CVs.
 
 ### CV (`cv/main_<company>.tex`)
 - Always in **English**
@@ -69,14 +76,19 @@ Also read the most recent existing CV and cover letter files for concrete struct
 - Tailor the profile statement and experience bullets to the specific role
 - Reframe skills and achievements to match job requirements
 - Keep to 2 pages
+- Profile statement must pass the **Backtrack Test** (see `05-cv-templates.md`)
 
 ### Cover Letter (`cover_letters/cover_<company>_<role>.tex`)
 - **Match the language of the job posting** (Norwegian posting -> Norwegian cover letter, English posting -> English cover letter)
 - Follow the structure from `06-cover-letter-templates.md`
-- Use the `cover.cls` template
+- **MUST** use `\documentclass[]{cover}` — do NOT use `article` or any other class
 - Tailor the opening paragraph to the specific role and company
 - Address to a named person if available in the posting, otherwise "Dear Hiring Manager" (or equivalent in posting language)
 - Keep to approximately one page
+- Must contain **at least one quantified outcome** from the CV (25-30% reduction, 5+ municipalities, 70+ power plants, 3 core products)
+- Must contain **at least 2 specific, independently-verified company facts** — do NOT make generic claims
+- Must pass the **CV repetition test**: if any sentence could be lifted from the CV and still make sense, rewrite it
+- Tone must match the behavioral profile from `02-behavioral-profile.md` (Analytical Problem-Solver + High Collaborator)
 - Any mention of agentic coding or AI tooling must reference **Claude Code** by name
 
 Write both files to disk. Keep the exact text of both drafts in working memory — you will pass them inline to the reviewer in Step 3 and revise them in Step 4 without re-reading.
@@ -103,10 +115,10 @@ Use WebSearch and WebFetch to research:
 
 ### 2. Read Reference Materials (content-critique only)
 Read these four files — and only these — to ground your critique:
-- `.gemini/skills/job-application-assistant/01-candidate-profile.md`
-- `.gemini/skills/job-application-assistant/02-behavioral-profile.md` — use this specifically to check whether the cover letter's voice matches the candidate's natural register. A "Collaborator" PI profile, for example, should not be given a combative, solo-hero tone; a "Persuader" profile should not be given over-hedged, apologetic phrasing.
-- `.gemini/skills/job-application-assistant/03-writing-style.md`
-- `.gemini/skills/job-application-assistant/04-job-evaluation.md`
+- `..agent/skills/job-application-assistant/01-candidate-profile.md`
+- `..agent/skills/job-application-assistant/02-behavioral-profile.md` — use this specifically to check whether the cover letter's voice matches the candidate's natural register. A "Collaborator" PI profile, for example, should not be given a combative, solo-hero tone; a "Persuader" profile should not be given over-hedged, apologetic phrasing.
+- `..agent/skills/job-application-assistant/03-writing-style.md`
+- `..agent/skills/job-application-assistant/04-job-evaluation.md`
 
 Do NOT read `05-cv-templates.md` or `06-cover-letter-templates.md` — those govern LaTeX structure the drafter already applied and are not needed for content critique.
 
@@ -150,6 +162,18 @@ Prose suggestions grouped by category. Produce each category even if your findin
 - **Tone and style issues** — check against `03-writing-style.md` AND `02-behavioral-profile.md`. Flag any issues with tone, formality, or voice (cliches, hedging, over-humility, inconsistent register), and specifically flag any mismatch between the letter's voice and the candidate's natural register as described in the behavioral profile.
 
 **CRITICAL RULE:** All suggestions must be grounded in actual profile data. Do NOT suggest fabricating skills, experience, or achievements. If a requirement is a gap, say so honestly and suggest how to frame adjacent experience instead.
+
+### Mandatory Checks (you MUST flag these if violated)
+
+1. **Generic company claims.** If the cover letter says something about the company that could apply to any company in the industry (e.g., "industry leadership in sustainable X"), flag it. Require specific, verified facts instead.
+
+2. **Template correctness.** Check if the cover letter uses `\documentclass[]{cover}`. If it uses `article` or any other class, flag this as a blocking issue — the letter will not render with the correct fonts or signature block.
+
+3. **Quantified outcomes.** If the cover letter body has zero numbers/metrics, flag it. The candidate's CV has quantified achievements (25-30% reduction, 5+ municipalities, 70+ power plants, 3 core products). At least one must appear in the cover letter.
+
+4. **Tone match.** Compare the cover letter's voice against `02-behavioral-profile.md`. The candidate is an Analytical Problem-Solver with High Collaboration. If the letter reads as a solo-hero narrative or purely emotional appeals, flag the mismatch.
+
+5. **CV repetition.** If 2+ sentences in the cover letter describe the same work the CV describes (rather than forward-looking problem-solving), flag as redundant. The cover letter should focus on tasks the candidate will solve for the employer, not re-list past duties.
 
 Do **not** run a verification checklist — the drafter will do that in the final step. Focus on content critique.
 

@@ -1,41 +1,29 @@
-%% Example CV - [YOUR_NAME]
+%% Master CV - Siddhant Gupta
 %% Comprehensive overview of all competencies, experience, and achievements.
 %% Use as a master reference when tailoring role-specific CVs.
 %%
-%% SETUP: Run /setup to populate this with your actual information.
+%% SETUP: Populated by /setup
 %% Compile with: lualatex main_example.tex
-%% (pdflatex often fails on modern MiKTeX with fontawesome5 font-expansion errors.)
+%% (Note: Running the compiler twice is normal to resolve hyperref/outline warnings.)
 
 \documentclass[11pt,a4paper,sans]{moderncv}
 \moderncvstyle{banking}
 \moderncvcolor{blue}
 
-% Force both first and last name AND section headings to render in moderncv
-% blue (color1). Default banking on lualatex+MiKTeX leaves these black, which
-% looks inconsistent with the rest of the blue accent scheme.
-\renewcommand*{\firstnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
-\renewcommand*{\lastnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
-\renewcommand*{\sectionstyle}[1]{{\sectionfont\color{color1}#1}}
-
-\usepackage[utf8]{inputenc}
-\usepackage{hyperref}
-\hypersetup{
-    colorlinks=true,
-    linkcolor=blue,
-    filecolor=magenta,
-    urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
-    pdfpagemode=FullScreen,
-}
 \usepackage[scale=0.80]{geometry}
-\usepackage{import}
+\usepackage{needspace} % Added to dynamically manage awkward page breaks
+
+% Force both first and last name AND section headings to render in moderncv
+% blue (color1). This overrides the engine defaults using universal macros.
+\renewcommand*{\namefont}{\fontsize{34}{36}\bfseries\upshape\color{color1}\selectfont}
+\renewcommand*{\sectionfont}{\Large\bfseries\upshape\color{color1}\selectfont}
 
 % personal data
-\name{[First]}{[Last]}
-\address{[Your Address, City, Country]}{}{}
-\phone[mobile]{[+XX XXXXXXXXXX]}
-\email{[your.email@example.com]}
-\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
+\name{Siddhant}{Gupta}
+\address{Trondheimsveien 64, Oslo, Norway}{}{}
+\phone[mobile]{+47 92206297}
+\email{siddhantbenz@gmail.com}
+\social[linkedin]{siddhantgupta1996}
 
 \begin{document}
 
@@ -46,64 +34,53 @@
 % ============================================================
 
 \vspace{6pt}
-\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
-
-% ============================================================
-%     CORE COMPETENCIES
-% ============================================================
-
-\section{Core Competencies}
-\vspace{1pt}
-\begin{itemize}
-
-\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
-
-\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
-
-\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
-
-\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
-
-\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
-
-\end{itemize}
-
+{\small Data Engineer/Analyst with 4+ years of experience building scalable data pipelines and delivering data-driven insights. Combines expertise in carbon accounting and ESG frameworks with strong engineering and programming skills to build robust, scalable data solutions.\par}
 % ============================================================
 %     PROFESSIONAL EXPERIENCE
 % ============================================================
-
 \section{Professional Experience}
 \vspace{3pt}
-\begin{itemize}
 
 % --- Most Recent Role ---
-\item{\cventry{[YYYY--Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\cventry{05/2022--Present}{Climate Footprint Analyst}{Ducky AS}{Norway}{}{
 \begin{itemize}
-    \item [Achievement or responsibility 1 - be specific, use numbers where possible]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-    \item [Achievement or responsibility 4]
-\end{itemize}}}
+    \item Engineered ETL pipelines to integrate ERP data with emission factor databases, automating end-to-end carbon accounting workflows compliant with VSME and ESRS frameworks.
+    \item Implemented an NLP-based data classification pipeline to automate GHG Scope and emission factor attribution to financial transactions, reducing manual processing time by 80\%.
+    \item Architected a scalable data pipeline to ingest, normalize and transform regional telecommunication data for modelling local mobility patterns, providing decision-support for sustainable urban mobility planning across 5+ municipalities.
+    \item Developed a lifecycle assessment model (LCA) in Python to compare the environmental impact of various equipment ownership scenarios (reuse, rental, and buying new), demonstrating a 25--30\% reduction in lifecycle greenhouse gas emissions.
+    \item Authored and maintained technical documentation for three core data products, translating complex methodologies into clear documentation for engineers, product teams, and business stakeholders.
+\end{itemize}}
 
 \vspace{3pt}
 
 % --- Previous Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\cventry{02/2021--09/2021}{Research Assistant}{greenventory GmbH / Fraunhofer ISE}{Freiburg, Germany}{}{
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-    \item [Achievement or responsibility 3]
-\end{itemize}}}
+    \item Built a geospatial model using OpenStreetMap data to identify suitable locations for heat pump installations. Implemented constraint-based filtering logic to programmatically enforce regulatory and technical zoning requirements, enabling optimal site selection.
+    \item Developed a simulation model in Python, integrating various environmental datasets (soil conductivity, ground temperature data, etc.) to model geothermal energy potential, providing quantitative data to support municipal heating transition strategies.
+\end{itemize}}
 
 \vspace{3pt}
 
 % --- Earlier Role ---
-\item{\cventry{[YYYY--YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+% Dynamically check if there is enough space left on page 1 for the whole entry
+\needspace{2\baselineskip}
+\cventry{01/2019--07/2019}{Energy Analyst Intern}{Centre for Science and Environment}{New Delhi, India}{}{
 \begin{itemize}
-    \item [Achievement or responsibility 1]
-    \item [Achievement or responsibility 2]
-\end{itemize}}}
+    \item Processed, cleaned, and analyzed emissions datasets covering 70+ thermal power plants using Python, improving data quality and providing analytical insights into environmental compliance trends.
+    \item Translated quantitative findings into policy recommendations, outlining strategies for pollution control technology adoption by thermal power plants.
+\end{itemize}}
+% ============================================================
+%     CORE COMPETENCIES
+% ============================================================
 
+\section{Technical Stack}
+\vspace{1pt}
+\begin{itemize}
+\item \textbf{Programming}: Python (Pandas, NumPy, scikit-learn), SQL, R, JavaScript.
+\item \textbf{Cloud \& DevOps}: GCP, Docker, CI/CD, Git.
+\item \textbf{Data Engineering}: ETL Pipelines, API Integration, Data Modeling, Data Integration, Data Validation, Data Visualization (Tableau, Power BI).
+\item \textbf{ESG & Carbon Accounting}: Greenhouse Gas (GHG) Protocol (Scope 1, 2, 3), ESG Reporting (CSRD, ESRS, GRI), TCFD, ISO 14064, Lifecycle Assessment (LCA).
 \end{itemize}
 
 % ============================================================
@@ -112,20 +89,25 @@
 
 \section{Education}
 \vspace{1pt}
-\begin{itemize}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-Thesis: ``[Thesis Title].'' [Brief description of research focus.]
-}}
+\cventry{2019--2021}{M.Sc. in Sustainable Energy Systems}{Chalmers University of Technology}{Gothenburg, Sweden}{}{
+Thesis: ``Estimating the technical shallow geothermal potential for heating: A case study of L\"{o}rrach, Germany.''
+}
 
 \vspace{3pt}
 
-\item{\cventry{[YYYY--YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-[Brief description or key topics.]
-}}
+\cventry{2014--2018}{B.Tech. in Mechanical Engineering}{Manipal Institute of Technology}{Manipal, India}{}{
+}
 
-\end{itemize}
+% ============================================================
+%     PROJECTS
+% ============================================================
 
+\section{Projects}
+\vspace{1pt}
+\begin{itemize}
+\item \textbf{Automated Emission Factor Matching for Carbon Accounting}: Architected an end-to-end ETL pipeline that maps messy procurement data to standardized emission factors. The pipeline ingests and normalizes heterogeneous emissions datasets, and performs a hybrid matching strategy using semantic vector embeddings and LLM-based reasoning for high-precision mapping of procurement data to emission factors.
+\item \textbf{Future Electricity System of Sweden}: Formulated a linear programming optimization model of the Swedish electricity system in GAMS to minimize total system costs and emissions. Performed sensitivity analyses assessing the impact of varying renewable energy penetration on the merit order, electricity prices, and cross-border electricity trade.
 % ============================================================
 %     LANGUAGES
 % ============================================================
@@ -133,37 +115,11 @@ Thesis: ``[Thesis Title].'' [Brief description of research focus.]
 \section{Languages}
 \vspace{1pt}
 \begin{itemize}
-\item [Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).
-\end{itemize}
-
-% ============================================================
-%     PUBLICATIONS (optional)
-% ============================================================
-
-\section{Publications}
-\vspace{1pt}
-\begin{itemize}
-\item [Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}
-\end{itemize}
-
-% ============================================================
-%     HONORS AND AWARDS (optional)
-% ============================================================
-
-\section{Honors and Awards}
-\vspace{1pt}
-\begin{itemize}
-\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
+\item English (Native/Bilingual), Hindi (Native/Bilingual), Norwegian (Limited Working), German (Limited Working).
 \end{itemize}
 
 % ============================================================
 %     REFERENCES
 % ============================================================
-
-\section{References}
-\vspace{1pt}
-\begin{itemize}
-\item{Available upon request.}
-\end{itemize}
 
 \end{document}

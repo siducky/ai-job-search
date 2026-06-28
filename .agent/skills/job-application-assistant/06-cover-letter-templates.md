@@ -72,7 +72,33 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     TITLE NAME
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\namesection{}{\Huge{[YOUR_NAME]}}{  \href{mailto:[YOUR_EMAIL]}{[YOUR_EMAIL]} | [YOUR_PHONE] |  \urlstyle{same}\href{[YOUR_LINKEDIN_URL]}{LinkedIn}
+\namesection{}{\Huge{Siddhant Gupta}}{  \href{mailto:siddhantbenz@gmail.com}{siddhantbenz@gmail.com} | +47 92206297 |  \urlstyle{same}\href{https://www.linkedin.com/in/siddhantgupta1996}{LinkedIn}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     MAIN COVER LETTER CONTENT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\currentdate{\today}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Cover Letter - [Company], [Role]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[]{cover}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\fancyhf{}
+
+\rfoot{Page \thepage \hspace{0pt}}
+\thispagestyle{empty}
+\renewcommand{\headrulewidth}{0pt}
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     TITLE NAME
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\namesection{}{\Huge{Siddhant Gupta}}{  \href{mailto:siddhantbenz@gmail.com}{siddhantbenz@gmail.com} | +47 92206297 |  \urlstyle{same}\href{https://www.linkedin.com/in/siddhantgupta1996}{LinkedIn}
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -84,15 +110,17 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 
 \lettercontent{[Opening paragraph - role, connection to background, 2-3 sentences]}
 
-\lettercontent{[Body paragraph - most relevant experience, then bullet list]
+\lettercontent{[Body paragraph - most relevant experience, then bullet list:]}
 
+{\raggedright\fontspec[Path = OpenFonts/fonts/raleway/]{Raleway-Medium}\fontsize{11pt}{13pt}\selectfont
 \begin{itemize}
     \item [Concrete achievement/skill 1]
     \item [Concrete achievement/skill 2]
     \item [Concrete achievement/skill 3]
-\end{itemize}
+\end{itemize}\par}
+\vspace{6pt}
 
-[Connection to company - why this role, why this company specifically]}
+\lettercontent{[Connection to company - why this role, why this company specifically]}
 
 \lettercontent{[Personal fit paragraph - behavioral strengths, team contribution, 2-3 sentences]}
 
@@ -101,7 +129,7 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 \begin{flushright}
 \closing{Kind regards,\\}
 
-\signature{[YOUR_NAME]}
+\signature{Siddhant Gupta}
 \end{flushright}
 \end{document}
 ```
@@ -120,7 +148,6 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 
 ### Salutation
 - If you know the hiring manager's name: "Dear [First Last],"
-- If you know the team: "Dear [Company] hiring team,"
 - Generic: "Dear [Company]," (avoid "To whom it may concern")
 
 ### Length - Hard 1-Page Limit
@@ -149,6 +176,42 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 - Adjust date format to local convention
 - Adjust closing to local convention (e.g. "Med vennlig hilsen," for Norwegian)
 
+## Hard Rules
+
+These are not suggestions. These rules must be enforced before a cover letter is considered final.
+
+### Rule 1: At least one quantified outcome
+The cover letter body must contain at least one quantified achievement from the CV. Zero-metrics letters are rejected. The candidate's CV has numbers (25-30% reduction, 5+ municipalities, 70+ power plants, 3 core products). Pick one and weave it into the body paragraph.
+
+Example:
+> **Weak:** "I have experience building data pipelines for sustainability reporting."
+> **Better:** "I engineered ETL pipelines that automated GHG accounting across 5+ municipalities, reducing manual mapping effort."
+
+### Rule 2: At least 2 specific, independently-verified company facts
+Every company-specific claim in the cover letter must refer to a concrete, verifiable fact about the company. Generic mission statements ("industry leadership in sustainable X") are not enough. Acceptable:
+- A specific project they announced (e.g., "Hydro's post-consumer scrap sorting facility at Clermont-Ferrand")
+- A strategic initiative (e.g., "Statkraft's 2 GW onshore wind portfolio under development")
+- A technology/platform (e.g., "your data platform using Databricks and Azure")
+
+Before including any company fact, verify it via WebSearch/WebFetch. Do not trust reviewer agent research at face value.
+
+### Rule 3: Template-consistency check
+The cover letter MUST use `\documentclass[]{cover}`. Do NOT use `article`, `scrartcl`, or any other document class. The `cover.cls` class provides the branded header, correct fonts (Lato/Raleway), and proper signature block. Using any other class produces a visually inconsistent document.
+
+### Rule 4: CV repetition test
+After writing the cover letter, run this test:
+
+> **"Can any sentence in the cover letter be lifted from the CV and still make sense? If yes, rewrite that sentence."**
+
+The cover letter is not a CV summary. Its job is forward-looking: problems you'll solve for the employer, not what you've already done. Every paragraph should describe work the employer needs done, with past experience used only as brief evidence that you can do it.
+
+### Rule 5: Behavioral tone match
+The cover letter's voice must match the candidate's behavioral profile from `02-behavioral-profile.md`:
+- **Analytical Problem-Solver** profile → lead with methodical approach, structured thinking
+- **High Collaboration** → include team/ stakeholder language, frame achievements with "we" or cross-functional context
+- Do NOT give a "Collaborator" profile a solo-hero, combative tone
+- Do NOT give an "Analytical Problem-Solver" profile purely emotional appeals
+
 ## Checklist Before Finalizing
 - [ ] No em-dashes (use commas or periods instead)
 - [ ] No cliches or empty filler
@@ -161,6 +224,11 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 - [ ] Language matches the job posting language
 - [ ] Salutation is appropriate (named person if possible)
 - [ ] Headline is engaging and specific, not generic
+- [ ] Uses \documentclass[]{cover} (not article or other class) — **MANDATORY**
+- [ ] Contains at least 1 quantified outcome — **MANDATORY**
+- [ ] Contains at least 2 specific, verified company facts — **MANDATORY**
+- [ ] Passes the CV repetition test (no sentence that could be lifted from the CV) — **MANDATORY**
+- [ ] Tone matches behavioral profile from 02-behavioral-profile.md — **MANDATORY**
 
 ## Submission Guidelines (Best Practice)
 - Submit only the documents the employer requests

@@ -1,19 +1,17 @@
 # CV Templates and Tailoring Guide
 
-<!-- SETUP: Profile statements and section ordering are personalized by running /setup -->
-
 ## Template: LaTeX moderncv (Banking Style)
 
 All CVs use the moderncv LaTeX package with the "banking" style and "blue" color scheme.
 
 **Output file:** `cv/main_<company>.tex`
-**Compile with:** **lualatex** on MiKTeX/TeX Live. pdflatex often fails on modern MiKTeX installs with `fontawesome5` font-expansion errors; lualatex handles the same sources cleanly.
+**Compile with:** **xelatex** (same engine as cover letters).
 **Master reference:** `cv/main_example.tex` (comprehensive CV with all competencies, experience, and achievements - use as source when building targeted CVs)
 
 ### Compile command
 
 ```bash
-cd cv && lualatex -interaction=nonstopmode main_<company>.tex
+cd cv && xelatex -interaction=nonstopmode main_<company>.tex
 ```
 
 Expected output: `Output written on main_<company>.pdf (2 pages, ...)`. Any page count other than 2 is a failure that must be fixed before presenting to the user.
@@ -26,49 +24,42 @@ Expected output: `Output written on main_<company>.pdf (2 pages, ...)`. Any page
 \moderncvcolor{blue}
 
 % Force both first and last name AND section headings to render in moderncv
-% blue (color1). Default banking on lualatex+MiKTeX leaves these black, which
-% looks inconsistent with the rest of the blue accent scheme.
-\renewcommand*{\firstnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
-\renewcommand*{\lastnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}#1}}
+% blue (color1) with correct font scaling.
+\renewcommand*{\firstnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}\selectfont#1}}
+\renewcommand*{\lastnamestyle}[1]{{\fontsize{34}{36}\bfseries\upshape\color{color1}\selectfont#1}}
 \renewcommand*{\sectionstyle}[1]{{\sectionfont\color{color1}#1}}
 
-\usepackage[utf8]{inputenc}
-\usepackage{hyperref}
+% moderncv natively loads hyperref; do not call \usepackage{hyperref} here.
 \hypersetup{
     colorlinks=true,
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
+    pdftitle={Siddhant Gupta - CV},
     pdfpagemode=FullScreen,
 }
 \usepackage[scale=0.77]{geometry}
 \usepackage{import}
+\usepackage{needspace} % Required for orphaned entry management
 
 % Personal data
-\name{[FIRST_NAME]}{[LAST_NAME]}
-\address{[YOUR_ADDRESS]}{}{}
-\phone[mobile]{[YOUR_PHONE]}
-\email{[YOUR_EMAIL]}
-\extrainfo{\href{[YOUR_LINKEDIN_URL]}{LinkedIn}, \href{[YOUR_GITHUB_URL]}{GitHub}}
+\name{Siddhant}{Gupta}
+\address{Trondheimsveien 64, Oslo, Norway}{}{}
+\phone[mobile]{+47 92206297}
+\email{siddhantbenz@gmail.com}
+\social[linkedin]{siddhantgupta1996}
 
 \begin{document}
 \makecvtitle
 
-% 1. Profile statement (1-3 sentences, tailored per role)
-% 2. Skills section
-% 3. Education section
-% 4. Professional Experience section
-% 5. Selected Publications (if applicable)
-% 6. Honors and Awards (if applicable)
-% 7. References
+% CV content goes here
 
 \end{document}
 ```
 
 ### Color overrides
 
-The three `\renewcommand*` lines in the preamble are required on lualatex+MiKTeX. Without them the firstname, lastname, and section headings render in black even though `\moderncvcolor{blue}` is set, which looks inconsistent with the rest of the blue accent scheme (links, bullet markers, contact icons). The override forces all three to use `color1` (moderncv's accent colour, which becomes blue under `\moderncvcolor{blue}`). Both names render bold; if you prefer the firstname in regular weight, change the firstnamestyle override from `\bfseries` to `\mdseries`. Don't drop the override - on most modern installs the defaults render visibly wrong.
+The three `\renewcommand*` lines in the preamble are required on xelatex. Without them the firstname, lastname, and section headings render in black even though `\moderncvcolor{blue}` is set, which looks inconsistent with the rest of the blue accent scheme (links, bullet markers, contact icons). The override forces all three to use `color1` (moderncv's accent colour, which becomes blue under `\moderncvcolor{blue}`). Both names render bold; if you prefer the firstname in regular weight, change the firstnamestyle override from `\bfseries` to `\mdseries`. Don't drop the override - on most modern installs the defaults render visibly wrong.
 
 ### Spacing inside itemize lists (important)
 
@@ -101,21 +92,31 @@ Two related patterns are fine and should be kept:
 ### Profile Statement / Elevator Pitch (Best Practice)
 This is the most important section to customize. It appears right after `\makecvtitle`.
 
-Write 5-7 lines that function as an "elevator pitch": a concise, compelling introduction explaining why you're qualified for *this specific role*. Focus on what the employer gains from hiring you.
+Write 5-7 lines that function as an "elevator pitch": a concise, compelling introduction explaining why you're qualified for *this specific role*. Focus on what the employer gains from hiring you and why you're fit for this job (past experience, education, passionate about it)
 
 **Create 2-3 profile statement templates for your main role types:**
 
-<!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For ESG / Sustainability Analyst roles:**
+> Sustainability analyst with 4+ years of experience in carbon accounting accounting, energy systems modelling, and environmental data analysis.  Combines quantitative skills in Python and SQL with domain expertise in CSRD/ESRS, GHG Protocol, and TCFD frameworks to translate complex environmental data into into actionable insights. Supports organisations in meeting their sustainability goals by identifying practical decarbonisation pathways
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For Data Analyst / Data Scientist roles:**
+> Data analyst with 4+ years of experience developing quantitative models, automated data pipelines, and predictive tools. Combines strong Python, SQL, and machine learning skills with deep domain knowledge in carbon accounting and energy systems. Translates raw, technical data into clear, data-driven insights for strategic business stakeholders.
+
+**For Energy / Energy System Analyst roles:**
+> Energy systems analyst with 4+ years of experience in energy systems modelling, optimisation, and geospatial analysis. Applies Python, SQL, and GAMS to model renewable integration, grid dynamics, and energy transition scenarios. Translates quantitative analysis of physical energy systems into structured insights for strategic decision-making. Background in sustainable energy systems (M.Sc.) with hands-on simulation and optimisation modelling experience.
+> 
+> **⚠️ Backtrack Test Warning:** Do NOT use this template for roles requiring actual power trading, market risk, or commodity trading experience. The candidate has energy systems analysis experience — this is adjacent to but distinct from commercial trading. If the posting asks for "power trading" or "commodity risk" experience, use the Analyst/Data template above and frame adjacent quantitative skills honestly.
+
+**For Researcher / Analyst roles at research institutes:**
+> Analyst with a Master's in Sustainable Energy Systems, combining quantitative modelling skills (Python, SQL, GAMS) with domain expertise in carbon accounting, energy systems, and lifecycle assessment. Applies data science methods to evaluate decarbonisation pathways, energy transition scenarios, and sustainability metrics. Experienced in translating complex quantitative analysis into clear policy and strategy recommendations.
 
 ### Core Competencies / Skills Section (Best Practice)
-Reorder and emphasize based on the role. Use bold category labels.
+Tailor, prioritize, and structure this section to align directly with the primary requirements of the target job description.
 
-List **5-7 key competencies** in bullet format, tailored to the specific job. For each competency, briefly explain how it adds value to the position.
+* **Target Volume:** List **5–7 key competencies** in a bulleted format.
+* **Formatting:** Start each bullet with a bold category label (e.g., **Data Engineering & Analysis:**), followed by specific tools or methodologies, and a brief context line.
+* **Prioritization:** Reorder the list so the skills most critical to the target role appear at the very top.
+* **Context Over Lists:** Avoid raw tool lists (e.g., just listing "Python, SQL"). Instead, briefly explain how you apply those tools to solve a problem (e.g., *"using Python and SQL to automate data pipelines"*). This demonstrates immediate value to the hiring manager.
 
 ### Education
 - Always include your highest degrees
@@ -150,7 +151,7 @@ If there is a gap in your employment history:
 
 After writing the CV and before presenting to the user, always compile and visually inspect the PDF. Iterate until the layout is clean. Workflow:
 
-1. Run `lualatex -interaction=nonstopmode main_<company>.tex`
+1. Run `xelatex -interaction=nonstopmode main_<company>.tex`
 2. Check the output page count: must be exactly 2
 3. Read the PDF via the Read tool and visually inspect both pages
 4. Check for **orphaned entries**: a `\cventry` title line must never sit alone at the bottom of page 1 with its bullets on page 2
@@ -173,6 +174,13 @@ Cut content — do not compress geometry or `\vspace`. See "Relevance-weighted c
 
 **Problem: content finishes early on page 2 (feels thin)**
 Restore the highest-relevance item that was previously cut — a CV that ends mid-page 2 looks incomplete.
+
+## ⚠️ Hard Rule: Differentiation Check (anti-copy-paste)
+Every CV must be unique to the target role. Before writing the CV, the drafter must pass this self-check:
+
+> **"State in 2-3 sentences how this CV's profile statement, competency ordering, and experience bullets differ from the Position Green CV and the Hydro CV. If you cannot articulate a clear difference, the targeting is insufficient."**
+
+This check exists because in practice, CVs across different roles (e.g., quant risk analyst vs. customer success manager) were being written with nearly identical profile statements and competency lists. Two roles with different requirements need two different CVs.
 
 ## Page Budget - Hard 2-Page Limit
 
@@ -219,23 +227,44 @@ Cut the lowest-total-score line first, regardless of which section it sits in.
 - Do not cut the one concrete example the cover letter leans on. Relevance is measured against the cover letter you wrote, not just the job posting — interviewers will have read both.
 - Do not cut to fit if the fit is borderline (2.02 pages). Prefer `\enlargethispage{2-3\baselineskip}` on a late section for near-misses; reserve content cuts for genuine overflow (content on page 3 that is more than a single trailing section).
 
+## Hard Rule: Backtrack Test on Profile Statements
+
+Every profile statement must pass the **interview backtrack test**: could the candidate comfortably explain every claim in the profile in an interview without backtracking?
+
+- **OK:** "Energy systems modelling experience using GAMS and Python to simulate renewable integration"
+- **Flag it:** "Power market dynamics and commercial trading strategies" — the candidate does not have trading experience
+- **Never:** Any claim that implies domain experience the candidate does not have
+
+If a profile statement would require the candidate to say "well, what I actually meant was..." in an interview, the statement is too far. Rewrite it.
+
 ## Recommended Section Order
 
-The section order varies by role type:
+The section order varies by role type to ensure your strongest assets are read first:
 
 **For technical / data science / ML roles:**
+1. Profile statement / elevator pitch
+2. Core competencies / Skills
+3. Professional Experience (reverse chronological) — prioritizes technical industry delivery
+4. Education (reverse chronological)
+5. Languages
+6. Publications & Awards (if applicable)
+7. References
+
+**For domain-specific / specialist roles (ESG, energy, policy):**
+1. Profile statement / elevator pitch
+2. Core competencies / Skills
+3. Professional Experience (reverse chronological) — highlights practical regulatory and methodology application first
+4. Education (reverse chronological) — academic credentials support the practical experience
+5. Certifications (e.g., Sustainability Leadership, carbon accounting courses)
+6. Languages
+7. References
+
+**For analyst roles (data, market, commodity):**
 1. Profile statement / elevator pitch
 2. Core competencies / Skills
 3. Professional Experience (reverse chronological)
 4. Education (reverse chronological)
 5. Languages
-6. Publications & Awards
-7. References
-
-**For domain-specific / specialist roles:**
-1. Profile statement / elevator pitch
-2. Core competencies / Skills
-3. Education (reverse chronological) - credentials are a key qualifier
-4. Professional Experience (reverse chronological)
-5. Publications & Awards
 6. References
+
+*Note: For PhD, academic, or research-intensive applications, you may swap Education and Professional Experience to place your academic credentials immediately after your Skills.*

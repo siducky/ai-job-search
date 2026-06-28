@@ -2,9 +2,9 @@
 
 ## Prerequisites
 - Python 3.10+
-- DeepSeek API key (set as `DEEPSEEK_API_KEY` environment variable)
-- LaTeX distribution with `lualatex` and `xelatex` (e.g., TeX Live, MiKTeX)
-- Python packages: `google-genai`, `pypdf`
+- DeepSeek API key (stored in `.env` file)
+- LaTeX distribution with `lualatex` and `xelatex` (e.g., TeX Live, MiKTeX)
+- Python packages: `openai`, `pypdf`, `python-dotenv`
 
 ## Quick Start
 1. **Fork & clone**  
@@ -14,11 +14,12 @@
    ```
 2. **Set API key**  
    ```bash
-   export DEEPSEEK_API_KEY='your_api_key_here'
+   cp .env.example .env
+   # Edit .env and paste your DeepSeek API key
    ```
 3. **Install dependencies**  
    ```bash
-   pip install -r requirements.txt  # or: pip install google-genai pypdf
+   pip install -r requirements.txt
    ```
 4. **Run the agent**  
    ```bash
@@ -76,7 +77,7 @@ Runs a curl‑based scraper against the supported Norwegian portals, deduplicate
 - **Reset**: ` /reset profile`, ` /reset documents`, or ` /reset all`.
 
 ## Troubleshooting
-- **`DEEPSEEK_API_KEY not set`** – export the variable as shown in the quick‑start.  
+- **`DEEPSEEK_API_KEY not set`** – create your `.env` file as shown in the quick‑start.
 - **LaTeX compilation errors** – ensure `lualatex` and `xelatex` are installed and the `moderncv` package is available.  
 - **Missing fonts** – the cover‑letter class expects Lato and Raleway fonts in `cover_letters/OpenFonts/fonts/`.  
 - **Job search fails** – verify `curl` is installed and you have network access.

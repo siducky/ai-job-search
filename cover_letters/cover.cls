@@ -9,12 +9,9 @@
 \LoadClass{article}
 
 % Package Imports
-\usepackage[hmargin=2.3cm, vmargin=2.3cm]{geometry}
+\usepackage[hmargin=2.54cm, vmargin=2.54cm]{geometry}
 \usepackage[hidelinks]{hyperref}
-\usepackage[usenames,dvipsnames]{xcolor}
-\usepackage{titlesec}
-\usepackage[absolute]{textpos}
-\usepackage{fontspec,xltxtra,xunicode}
+\usepackage{fontspec}
 
 % Publications
 \usepackage{cite}
