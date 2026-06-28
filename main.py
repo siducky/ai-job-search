@@ -926,7 +926,7 @@ def execute_reset(scope: str) -> str:
 
         cv_templates_path = os.path.join(SKILL_DIR, "05-cv-templates.md")
         if os.path.exists(cv_templates_path):
-            with open(cv_templates_path, "r") as f:
+            with open(cv_templates_path, "r", encoding="utf-8") as f:
                 content = f.read()
             content = re.sub(
                 r"\*\*Profile statement templates:\*\*.*?(?=\n##|\Z)",
@@ -934,13 +934,13 @@ def execute_reset(scope: str) -> str:
                 content,
                 flags=re.DOTALL,
             )
-            with open(cv_templates_path, "w") as f:
+            with open(cv_templates_path, "w", encoding="utf-8") as f:
                 f.write(content)
             results.append("Cleared profile statements from 05-cv-templates.md")
 
         interview_path = os.path.join(SKILL_DIR, "07-interview-prep.md")
         if os.path.exists(interview_path):
-            with open(interview_path, "r") as f:
+            with open(interview_path, "r", encoding="utf-8") as f:
                 content = f.read()
             content = re.sub(
                 r"## Ready-Made STAR Examples.*?(?=\n## |\Z)",
@@ -954,7 +954,7 @@ def execute_reset(scope: str) -> str:
                 content,
                 flags=re.DOTALL,
             )
-            with open(interview_path, "w") as f:
+            with open(interview_path, "w", encoding="utf-8") as f:
                 f.write(content)
             results.append("Cleared STAR examples from 07-interview-prep.md")
 
@@ -1025,7 +1025,7 @@ def load_system_prompt() -> str:
     skill_path = os.path.join(SKILL_DIR, "SKILL.md")
     if os.path.exists(skill_path):
         try:
-            with open(skill_path, "r") as f:
+            with open(skill_path, "r", encoding="utf-8") as f:
                 instructions = f.read()[:1000]
         except Exception:
             pass

@@ -110,7 +110,7 @@ def _find_client_secret() -> str | None:
 def _load_last_sheet_id() -> str | None:
     """Read the last-used sheet ID from the dotfile."""
     try:
-        with open(LAST_SHEET_ID_FILE) as f:
+        with open(LAST_SHEET_ID_FILE, encoding="utf-8") as f:
             sid = f.read().strip()
             return sid if sid else None
     except (FileNotFoundError, PermissionError):
@@ -120,7 +120,7 @@ def _load_last_sheet_id() -> str | None:
 def _save_last_sheet_id(sheet_id: str):
     """Write the sheet ID to the dotfile so next run remembers it."""
     try:
-        with open(LAST_SHEET_ID_FILE, "w") as f:
+        with open(LAST_SHEET_ID_FILE, "w", encoding="utf-8") as f:
             f.write(sheet_id)
     except (PermissionError, OSError) as e:
         print(
