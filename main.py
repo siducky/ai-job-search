@@ -281,24 +281,36 @@ def _register_tools(*funcs) -> list:
     return schemas
 
 
+class ChatConfig:
+    """Configuration for a ChatSession."""
+
+    def __init__(
+        self,
+        model: str,
+        thinking: bool = False,
+        reasoning_effort: str = "high",
+    ):
+        self.model = model
+        self.thinking = thinking
+        self.reasoning_effort = reasoning_effort
+
+
 class ChatSession:
     """OpenAI-compatible chat session with automatic tool-call loop."""
 
     def __init__(
         self,
         system_prompt: str,
-        model: str,
+        config: ChatConfig,
         tools: Optional[list] = None,
-        thinking: bool = False,
-        reasoning_effort: str = "high",
     ):
         self.client = OpenAI(
             api_key=os.environ.get("DEEPSEEK_API_KEY"),
             base_url="https://api.deepseek.com",
         )
-        self.model = model
-        self.thinking = thinking
-        self.reasoning_effort = reasoning_effort
+        self.model = config.model
+        self.thinking = config.thinking
+        self.reasoning_effort = config.reasoning_effort
         self.messages = [{"role": "system", "content": system_prompt}]
         self.tool_schemas = tools or []
         self.tool_map = {
@@ -361,13 +373,12 @@ def create_chat_session(
 ) -> ChatSession:
     """Creates a ChatSession with the given system prompt and tool functions."""
     tool_schemas = _register_tools(*tools_list) if tools_list else []
-    return ChatSession(
-        system_prompt,
-        DEEPSEEK_MODEL,
-        tool_schemas,
+    config = ChatConfig(
+        model=DEEPSEEK_MODEL,
         thinking=DEEPSEEK_THINKING,
         reasoning_effort=DEEPSEEK_REASONING_EFFORT,
     )
+    return ChatSession(system_prompt, config, tool_schemas)
 
 
 # ---------------------------------------------------------------------------
