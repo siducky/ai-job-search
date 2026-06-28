@@ -21,24 +21,38 @@ import json
 import sys
 import re
 import argparse
-import unicodedata
 from pathlib import Path
 
 DATA_FILE = Path(__file__).parent / "salary_data.json"
 
 # Common Danish <-> anglicized spelling variants
 SPELLING_VARIANTS = {
-    "ø": "o", "æ": "ae", "å": "aa",
-    "ö": "o", "ä": "ae", "ü": "u",
+    "ø": "o",
+    "æ": "ae",
+    "å": "aa",
+    "ö": "o",
+    "ä": "ae",
+    "ü": "u",
 }
 
 # Legal suffixes and noise to strip when matching company names
 STRIP_PATTERNS = [
-    r"\ba/s\b", r"\baps\b", r"\bi/s\b", r"\bp/s\b", r"\bk/s\b",
-    r"\bivs\b", r"\bamba\b", r"\ba\.m\.b\.a\.\b",
-    r"\(vg\)", r"\(.*?\)",  # (VG) and other parentheticals
-    r"\bdanmark\b", r"\bdenmark\b", r"\bscandinavia\b", r"\bnordic\b",
-    r"\bgroup\b", r"\bholding\b",
+    r"\ba/s\b",
+    r"\baps\b",
+    r"\bi/s\b",
+    r"\bp/s\b",
+    r"\bk/s\b",
+    r"\bivs\b",
+    r"\bamba\b",
+    r"\ba\.m\.b\.a\.\b",
+    r"\(vg\)",
+    r"\(.*?\)",  # (VG) and other parentheticals
+    r"\bdanmark\b",
+    r"\bdenmark\b",
+    r"\bscandinavia\b",
+    r"\bnordic\b",
+    r"\bgroup\b",
+    r"\bholding\b",
     r",\s*.*$",  # everything after comma (sub-entities)
 ]
 
@@ -48,7 +62,9 @@ def load_data():
         print("Error: salary_data.json not found.", file=sys.stderr)
         print("", file=sys.stderr)
         print("This tool requires a salary data file.", file=sys.stderr)
-        print("See tools/README_SALARY_TOOL.md for setup instructions.", file=sys.stderr)
+        print(
+            "See tools/README_SALARY_TOOL.md for setup instructions.", file=sys.stderr
+        )
         print("", file=sys.stderr)
         print("If you don't have salary data, the salary lookup", file=sys.stderr)
         print("step will be skipped during /apply.", file=sys.stderr)
@@ -141,7 +157,9 @@ def match_score(query, entry_name):
     if overlap:
         if len(q_words) == 1:
             q_word = list(q_words)[0]
-            if q_word in n_words or anglicize(q_word) in {anglicize(w) for w in n_words}:
+            if q_word in n_words or anglicize(q_word) in {
+                anglicize(w) for w in n_words
+            }:
                 return 70
             else:
                 return 0
@@ -161,7 +179,9 @@ def search_company(data, query, city=None):
         if city:
             city_lower = city.lower()
             entry_city = entry.get("city", "").lower()
-            if city_lower not in entry_city and anglicize(city_lower) not in anglicize(entry_city):
+            if city_lower not in entry_city and anglicize(city_lower) not in anglicize(
+                entry_city
+            ):
                 continue
 
         score = match_score(query, entry["company"])
@@ -196,7 +216,9 @@ def format_entry(entry, metadata):
         index_label = metadata.get("index_label", "Index")
         baseline = metadata.get("index_baseline", 100)
 
-        lines.append(f"  {'Category':<22} {'Count':>6} {index_label:>8}  {'vs Baseline':>10}")
+        lines.append(
+            f"  {'Category':<22} {'Count':>6} {index_label:>8}  {'vs Baseline':>10}"
+        )
         lines.append(f"  {'-'*50}")
 
         for label, data in categories.items():
@@ -213,7 +235,9 @@ def format_entry(entry, metadata):
                 else:
                     index_str = "N/A*"
                     diff_str = ""
-                lines.append(f"  {display_label:<22} {count_str:>6} {index_str:>8}  {diff_str:>10}")
+                lines.append(
+                    f"  {display_label:<22} {count_str:>6} {index_str:>8}  {diff_str:>10}"
+                )
 
         lines.append(f"\n  * N/A = Too few employees to publish (privacy)")
         if metadata.get("baseline_description"):

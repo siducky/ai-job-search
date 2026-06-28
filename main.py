@@ -118,7 +118,12 @@ def execute_shell_command(command: str) -> str:
     """Executes a shell command in the local environment (max 120s timeout)."""
     try:
         result = subprocess.run(
-            command, shell=True, capture_output=True, text=True, timeout=120
+            command,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=False,
         )
         output = []
         if result.stdout:
@@ -151,7 +156,7 @@ def grep_search(pattern: str, file_pattern: str = "*") -> str:
     cmd = f"grep -rn {shlex.quote(pattern)} --include={shlex.quote(file_pattern)} . 2>/dev/null | head -100"
     try:
         result = subprocess.run(
-            cmd, shell=True, capture_output=True, text=True, timeout=30
+            cmd, shell=True, capture_output=True, text=True, timeout=30, check=False
         )
         if result.stdout:
             return result.stdout.strip()
@@ -167,7 +172,7 @@ def append_to_csv(filepath: str, row_data: str) -> str:
         return "Error: Access denied."
     try:
         os.makedirs(os.path.dirname(safe_path), exist_ok=True)
-        with open(safe_path, "a", newline="") as f:
+        with open(safe_path, "a", newline="", encoding="utf-8") as f:
             f.write(row_data + "\n")
         return f"Appended to '{filepath}'."
     except Exception as e:
@@ -190,6 +195,7 @@ def web_fetch(url: str) -> str:
             capture_output=True,
             text=True,
             timeout=35,
+            check=False,
         )
         if result.returncode == 0 and result.stdout:
             # Basic HTML to text conversion
@@ -282,7 +288,7 @@ class ChatSession:
         self,
         system_prompt: str,
         model: str,
-        tools: list = None,
+        tools: Optional[list] = None,
         thinking: bool = False,
         reasoning_effort: str = "high",
     ):
@@ -350,7 +356,9 @@ class ChatSession:
             return choice.message.content or ""
 
 
-def create_chat_session(system_prompt: str, tools_list: list = None) -> ChatSession:
+def create_chat_session(
+    system_prompt: str, tools_list: Optional[list] = None
+) -> ChatSession:
     """Creates a ChatSession with the given system prompt and tool functions."""
     tool_schemas = _register_tools(*tools_list) if tools_list else []
     return ChatSession(

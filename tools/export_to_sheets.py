@@ -38,14 +38,13 @@ the Fit, Status, First Seen, and Notes columns.
 import argparse
 import json
 import os
-import re
 import sys
 from datetime import datetime
 
 # Optional: gspread
 try:
     import gspread
-    from gspread.exceptions import SpreadsheetNotFound, WorksheetNotFound
+    from gspread.exceptions import SpreadsheetNotFound
 except ImportError:
     print("Error: gspread is required. Install: pip install gspread", file=sys.stderr)
     sys.exit(1)

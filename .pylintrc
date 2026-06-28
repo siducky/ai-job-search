@@ -1,0 +1,21 @@
+[MAIN]
+disable=
+    C0116,     # missing-function-docstring
+    C0301,     # line-too-long
+    C0302,     # too-many-lines
+    R0903,     # too-few-public-methods
+    R0911,     # too-many-return-statements
+    R0912,     # too-many-branches
+    R0914,     # too-many-locals
+    R0915,     # too-many-statements
+    R1702,     # too-many-nested-blocks
+    R1705,     # no-else-return
+    R1724,     # no-else-continue
+    W0613,     # unused-argument (callback sigs)
+    W0718,     # broad-exception-caught
+    W1309,     # f-string-without-interpolation
+    C0103,     # invalid-name
+    R1721,     # unnecessary-comprehension
+    R0915,     # too-many-statements
+    W0612,     # unused-variable
+    E0401      # import-error (env-specific deps)

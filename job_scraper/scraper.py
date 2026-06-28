@@ -77,6 +77,7 @@ def curl_fetch(url: str) -> str:
             capture_output=True,
             text=True,
             timeout=20,
+            check=False,
         )
         if result.returncode == 0 and result.stdout:
             return result.stdout
@@ -609,7 +610,7 @@ def scrape_all(
     query: Optional[str] = None,
     location: str = "",
     max_pages: int = 2,
-    sites: list[str] = None,
+    sites: Optional[list[str]] = None,
 ) -> list[dict]:
     """Scrape job listings from multiple sites using curl."""
     all_jobs: list[dict] = []
