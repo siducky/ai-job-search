@@ -58,6 +58,7 @@ STRIP_PATTERNS = [
 
 
 def load_data():
+    """Load salary data from JSON file. Exits on missing file."""
     if not DATA_FILE.exists():
         print("Error: salary_data.json not found.", file=sys.stderr)
         print("", file=sys.stderr)
@@ -256,6 +257,7 @@ def format_entry(entry, metadata):
 
 
 def main():
+    """CLI entry point: search company salary data."""
     parser = argparse.ArgumentParser(description="Salary Benchmark Lookup")
     parser.add_argument("company", nargs="?", help="Company name to search for")
     parser.add_argument("--city", help="Filter by city name")

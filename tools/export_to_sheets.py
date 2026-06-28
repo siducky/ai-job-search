@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""
-Export Job Scraper Results to Google Sheets
-============================================
+"""Export Job Scraper Results to Google Sheets.
+
 Takes JSON output from job_scraper/scraper.py and exports to a Google Sheet.
 
 Prerequisites (one-time):
@@ -35,11 +34,14 @@ merge new listings into it on subsequent runs, preserving manual edits to
 the Fit, Status, First Seen, and Notes columns.
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import os
 import sys
 from datetime import datetime
+from typing import Optional
 
 # Optional: gspread
 try:
@@ -98,7 +100,7 @@ COLUMN_WIDTH_HINTS = {
 }
 
 
-def _find_client_secret() -> str | None:
+def _find_client_secret() -> Optional[str]:
     """Look for a gcloud OAuth client secret in common locations."""
     candidates = [os.path.join(REPO_ROOT, "gcloud_client_secret.json")]
     for path in candidates:
@@ -107,7 +109,7 @@ def _find_client_secret() -> str | None:
     return None
 
 
-def _load_last_sheet_id() -> str | None:
+def _load_last_sheet_id() -> Optional[str]:
     """Read the last-used sheet ID from the dotfile."""
     try:
         with open(LAST_SHEET_ID_FILE, encoding="utf-8") as f:
@@ -129,7 +131,7 @@ def _save_last_sheet_id(sheet_id: str):
         )
 
 
-def authorize_gspread(key_path: str = None):
+def authorize_gspread(key_path: Optional[str] = None):
     """Authorize gspread using a service account key, or OAuth client secret."""
     if key_path:
         creds = service_account.Credentials.from_service_account_file(
@@ -301,7 +303,7 @@ def read_existing_rows(worksheet) -> dict[str, list[str]]:
     header = all_rows[0]
     if header != SHEET_COLUMNS:
         print(
-            "Existing sheet has a different header — treating as empty for merge.",
+            "Existing sheet has a different header -- treating as empty for merge.",
             file=sys.stderr,
         )
         return {}
@@ -323,7 +325,7 @@ def merge_rows(new_rows: list[list], existing_rows: dict[str, list[str]]) -> lis
     First Seen, Notes) at indices 6-9, update scraper columns (0-5) from
     new data. For new URLs: add as-is.
     """
-    USER_COLS = {6, 7, 8, 9}  # Fit, Status, First Seen, Notes
+    user_cols = {6, 7, 8, 9}  # Fit, Status, First Seen, Notes
 
     merged = [SHEET_COLUMNS]
     seen_in_new: set[str] = set()
@@ -337,7 +339,7 @@ def merge_rows(new_rows: list[list], existing_rows: dict[str, list[str]]) -> lis
         if url in existing_rows:
             existing = existing_rows[url][:]
             for i in range(len(SHEET_COLUMNS)):
-                if i not in USER_COLS:
+                if i not in user_cols:
                     existing[i] = row[i] if row[i] else existing[i]
             merged.append(existing)
         else:
@@ -350,7 +352,7 @@ def merge_rows(new_rows: list[list], existing_rows: dict[str, list[str]]) -> lis
     return merged
 
 
-def create_or_get_sheet(gc, title: str, sheet_id: str = None):
+def create_or_get_sheet(gc, title: str, sheet_id: Optional[str] = None):
     """Create a new sheet or open an existing one by ID."""
     if sheet_id:
         try:
@@ -399,7 +401,6 @@ def update_sheet(sh, rows: list[list], merge_existing: bool = False):
 
         if merge_existing:
             existing_rows = read_existing_rows(worksheet)
-            # ponytail: merge, not replace; preserves manual Status/Fit/Notes edits
             rows = merge_rows(rows, existing_rows)
             print(
                 f"Merged with existing sheet ({len(existing_rows)} existing rows)",
@@ -476,7 +477,6 @@ def update_sheet(sh, rows: list[list], merge_existing: bool = False):
 
         worksheet.freeze(rows=1)
 
-        # ponytail: writes all rows each time (even on merge), which is O(n) — fine for <<10k rows
         print(f"Written {len(rows) - 1} jobs to sheet", file=sys.stderr)
         print(f"Sheet ID: {sh.id}", file=sys.stderr)
         print(
@@ -493,6 +493,7 @@ def update_sheet(sh, rows: list[list], merge_existing: bool = False):
 
 
 def main():
+    """CLI entry point: parse args, authorize, export to sheet."""
     parser = argparse.ArgumentParser(
         description="Export job scraper results to Google Sheets"
     )
@@ -526,7 +527,7 @@ def main():
         "--key",
         type=str,
         default=None,
-        help="Path to a Google service account JSON key file. If omitted, uses Application Default Credentials.",
+        help="Path to a Google service account JSON key file.",
     )
 
     args = parser.parse_args()
@@ -545,7 +546,6 @@ def main():
 
     gc = authorize_gspread(args.key)
 
-    # Determine which sheet to use
     sheet_id = args.sheet_id
     if not sheet_id:
         sheet_id = _load_last_sheet_id()

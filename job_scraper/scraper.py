@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""
-Multi-Site Job Scraper
-======================
+"""Multi-Site Job Scraper.
+
 Scrapes job listings from Norwegian job portals using curl (stdlib, no Playwright).
 
 Supported sites:
@@ -15,6 +14,8 @@ Usage:
     python job_scraper/scraper.py --query "data engineer" --location Oslo --site all --pages 2
     python job_scraper/scraper.py --query "data engineer" --site finn --output results.json
 """
+
+from __future__ import annotations
 
 import argparse
 import json
@@ -55,6 +56,7 @@ USER_AGENT = "Mozilla/5.0 (compatible; AgentJobSearch/1.0)"
 
 
 def resolve_finn_location(location_str: str) -> str:
+    """Resolve a city/county name to a finn.no location code."""
     key = location_str.strip().lower()
     if not key:
         return FINN_LOCATION_CODES["norge"]
@@ -79,7 +81,7 @@ def curl_fetch(url: str) -> str:
             timeout=20,
             check=False,
         )
-        if result.returncode == 0 and result.stdout:
+        if not result.returncode and result.stdout:
             return result.stdout
         return ""
     except Exception:
@@ -92,6 +94,7 @@ def curl_fetch(url: str) -> str:
 
 
 def parse_relative_date(text: str) -> str:
+    """Parse a Norwegian relative date string (e.g. 'ny i dag', '3 dager siden')."""
     today = datetime.now(timezone.utc)
     text = text.strip().lower()
     if text == "ny i dag":
@@ -117,6 +120,7 @@ def parse_relative_date(text: str) -> str:
 
 
 def parse_norwegian_date(text: str) -> str:
+    """Parse a Norwegian date string (e.g. '1. januar 2024') to ISO format."""
     text = text.strip()
     if not text:
         return "unknown"
@@ -449,7 +453,7 @@ JOBNORGE_COUNTY_CODES = {
     "trøndelag": 42,
     "troms": 46,
     "finnmark": 54,
-    # Cities → county
+    # Cities -> county
     "bergen": 38,
     "trondheim": 42,
     "stavanger": 11,
@@ -473,7 +477,7 @@ JOBNORGE_COUNTY_CODES = {
     "moss": 32,
     "porsgrunn": 33,
     "bodø": 18,
-    "narvik": 18,  # Narvik is in Troms after 2024, but geographically Nordland-ish; Troms=46
+    "narvik": 18,
     "alstahaug": 18,
     "levanger": 42,
     "namsos": 42,
@@ -689,6 +693,7 @@ def format_as_seen_json(jobs: list[dict], query: str, location: str) -> dict:
 
 
 def main():
+    """CLI entry point: parse args, scrape, output JSON."""
     parser = argparse.ArgumentParser(
         description="Scrape job listings from Norwegian job portals using curl"
     )

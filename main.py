@@ -197,7 +197,7 @@ def web_fetch(url: str) -> str:
             timeout=35,
             check=False,
         )
-        if result.returncode == 0 and result.stdout:
+        if not result.returncode and result.stdout:
             # Basic HTML to text conversion
             text = result.stdout
             # Remove scripts and styles
@@ -747,7 +747,7 @@ IMPORTANT RULES:
     )
 
 
-def cmd_upskill(args: str) -> str:
+def cmd_upskill(args: str) -> str:  # pylint: disable=unused-argument
     """
     Analyze skill gaps and generate a prioritized learning plan.
     Aggregate mode (no args) or targeted mode (with URL).

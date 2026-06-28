@@ -1,7 +1,6 @@
 [MAIN]
 disable=
     C0116,     # missing-function-docstring
-    C0301,     # line-too-long
     C0302,     # too-many-lines
     R0903,     # too-few-public-methods
     R0911,     # too-many-return-statements
@@ -18,4 +17,8 @@ disable=
     R1721,     # unnecessary-comprehension
     R0915,     # too-many-statements
     W0612,     # unused-variable
+    C0301,     # line-too-long (docstrings/f-strings)
+    C0114,     # missing-module-docstring
+    W0105,     # pointless-string-statement
+    C0413,     # wrong-import-position (from __future__ before docstring)
     E0401      # import-error (env-specific deps)
